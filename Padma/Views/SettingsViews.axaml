@@ -2,13 +2,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="450"
              x:Class="Padma.Views.SettingsViews">
     <Grid RowDefinitions="Auto, Auto, Auto" Background="{DynamicResource MainDarkBrush}">
         <Label Margin="5" HorizontalAlignment="Center" Grid.Row="0" Foreground="Gray" Content="Settings" FontSize="28"/>
         <StackPanel Spacing="3" Grid.Row="1" Orientation="Vertical">
             <TextBlock FontSize="17" Margin="30,0,5,0" Foreground="White" Text="Disable History" VerticalAlignment="Center"/>
             <ToggleSwitch Margin="60,0" Foreground="White" IsCheckedChanged="RememberHistoryToggleChanged" Name="RememberHistoryToggle" />
+        </StackPanel>
+        <StackPanel Grid.Row="2" Spacing="3">
+            <TextBlock FontSize="17" Margin="30,17,5,0" Foreground="White" Text="Clear History" VerticalAlignment="Center"/>
+            <Button Click="ClearHistory" Classes="Small" VerticalContentAlignment="Center" Content="Clear" Height="30" Margin="60,0"/>
         </StackPanel>
     </Grid>
 </UserControl>

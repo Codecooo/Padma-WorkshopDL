@@ -16,26 +16,29 @@
         <TextBox Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding SearchText}" Margin="5"
                  Width="550" Height="30" AcceptsReturn="True"
                  Watermark="Search Downloads" />
-        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden">
-            <ItemsControl ItemsSource="{Binding FilteredHistory}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel Orientation="Vertical"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Background="{DynamicResource ItemsDarkBrush}" Padding="10" Margin="5">
-                            <StackPanel>
-                                <TextBlock Foreground="Wheat" Text="{Binding WorkshopTitle}"/>
-                                <TextBox Classes="HistoryUrl" IsReadOnly="True" Foreground="Wheat" Text="{Binding WorkshopUrl}"/>
-                                <TextBlock Foreground="Wheat" Text="{Binding Date}"/>
-                                <Svg HorizontalAlignment="Right" VerticalAlignment="Top" Path="/Assets/folder.svg" Width="30" Height="30"/>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+        <Grid Grid.Row="2">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden">
+                <ItemsControl ItemsSource="{Binding FilteredHistory}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{DynamicResource ItemsDarkBrush}" Padding="10" Margin="5">
+                                <StackPanel>
+                                    <TextBlock Foreground="Wheat" Text="{Binding WorkshopTitle}"/>
+                                    <TextBox Classes="HistoryUrl" IsReadOnly="True" Foreground="Wheat" Text="{Binding WorkshopUrl}"/>
+                                    <TextBlock Foreground="Wheat" Text="{Binding Date}"/>
+                                    <Svg HorizontalAlignment="Right" VerticalAlignment="Top" Path="/Assets/folder.svg" Width="30" Height="30"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            <TextBlock IsVisible="{Binding HasHistory}" Text="Nothing to show here" Foreground="White" Opacity="0.3" FontSize="26" VerticalAlignment="Center"  HorizontalAlignment="Center"/>                
+        </Grid>
     </Grid>
 </UserControl>

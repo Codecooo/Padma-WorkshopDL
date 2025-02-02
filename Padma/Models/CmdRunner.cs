@@ -131,6 +131,7 @@ public class CmdRunner
         catch (Exception ex)
         {
             await LogAsync($"An error occurred: {ex.Message}");
+            Success = false;
         }
     }
 }

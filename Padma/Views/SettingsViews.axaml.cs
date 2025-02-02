@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using CommunityToolkit.Mvvm.Input;
 using Padma.Models;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,5 +24,15 @@ public partial class SettingsViews : UserControl
         // Bool HistoryEnabled will be set by negating the value of RememberHistoryToggle so if
         // its checked i.e. true HistoryEnabled set to false but if its null it will be defaulted to true
         _history.HistoryEnabled = !(RememberHistoryToggle.IsChecked ?? true);
+    }
+
+   /// <summary>
+   /// Used to clear the history database
+   /// </summary>
+   /// <param name="sender"></param>
+   /// <param name="e"></param>
+    private void ClearHistory(object? sender, RoutedEventArgs e)
+    {
+        _history.DeleteHistory();
     }
 }

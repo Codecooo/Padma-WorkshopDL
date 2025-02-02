@@ -10,8 +10,8 @@ namespace Padma.Models;
 
 public class LiteDbHistory
 {
-    [BsonId] public int Id { get; set; }
-
+    [BsonId] 
+    public int Id { get; set; }
     public DateTime Date { get; set; }
     public string WorkshopTitle { get; set; }
     public string WorkshopUrl { get; set; }
@@ -59,5 +59,6 @@ public class SaveHistory : ReactiveObject, IDisposable
     public void DeleteHistory()
     {
         History.DeleteAll();
+        HistoryChangedSignal.OnNext(Unit.Default);
     }
 }

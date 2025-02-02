@@ -1,6 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -17,6 +18,7 @@ public partial class HomeViews : UserControl
     public HomeViews()
     {
         InitializeComponent();
+        AutoScrollLogs();
         _history = App.ServiceProvider.GetRequiredService<SaveHistory>();
         _runner = new CmdRunner();
         _findThumbnailLoader = new ThumbnailLoader();
@@ -49,6 +51,18 @@ public partial class HomeViews : UserControl
     {
         // Use Dispatcher to update UI from background thread
         await Dispatcher.UIThread.InvokeAsync(() => { LogOutput.Text += message + Environment.NewLine; });
+    }
+
+    private void AutoScrollLogs()
+    {
+        var logoutput = this.FindControl<TextBox>("LogOutput");
+        logoutput.GetObservable<string>(TextBlock.TextProperty);
+        logoutput.GetObservable<string>(TextBox.TextProperty)
+            .Subscribe(_ =>
+            {
+                // Set the caret index to the end of the text
+                logoutput.CaretIndex = logoutput.Text.Length;
+            });
     }
 
     private string ExtractWorkshopId(string workshopUrl)

@@ -20,6 +20,7 @@
             <SolidColorBrush x:Key="MainDarkBrush">#070A0B</SolidColorBrush>
             <SolidColorBrush x:Key="LessDarkNavigation">#161C1E</SolidColorBrush>
             <SolidColorBrush x:Key="ItemsDarkBrush">#202020</SolidColorBrush>
+            <SolidColorBrush x:Key="MidnightBlueBrush">#160F33</SolidColorBrush>
         </ResourceDictionary>
     </Application.Resources>
     
