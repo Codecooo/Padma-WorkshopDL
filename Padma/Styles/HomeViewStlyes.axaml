@@ -1,0 +1,50 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <!-- Add Controls for Previewer Here -->
+        </Border>
+    </Design.PreviewWith>
+    <!-- Add Styles Here -->
+    <Style Selector="Button.Small">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Background" Value="#1434A4" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="CornerRadius" Value="30" />
+        <Setter Property="Padding" Value="7,2" />
+    </Style>
+    <Style Selector="TextBox.ConsoleLog:pointerover /template/ Border">
+        <Setter Property="Background" Value="#1B1212" />
+    </Style>
+    <Style Selector="TextBox.ConsoleLog:focus /template/ Border">
+        <Setter Property="Background" Value="#1B1212" />
+    </Style>
+    <Style Selector="TextBox.HistoryUrl:pointerover /template/ Border">
+        <Setter Property="Background" Value="{DynamicResource ItemsDarkBrush}" />
+    </Style>
+    <Style Selector="TextBox.HistoryUrl:focus /template/ Border">
+        <Setter Property="Background" Value="{DynamicResource ItemsDarkBrush}" />
+    </Style>
+    <Style Selector="TextBox.HistoryUrl">
+        <Setter Property="Background" Value="{DynamicResource ItemsDarkBrush}" />
+        <Setter Property="BorderThickness" Value="0"></Setter>
+        <Setter Property="BorderBrush" Value="{DynamicResource ItemsDarkBrush}"></Setter>
+    </Style>
+    <Style Selector="ToggleButton">
+        <Style Selector="^:checked /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+    </Style>
+    <Style Selector="ToggleButton:checked Svg.Console-checked">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="ToggleButton:checked Image.Console-unchecked">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="ToggleButton:unchecked Svg.Console-checked">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="ToggleButton:unchecked Image.Console-unchecked">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+</Styles>

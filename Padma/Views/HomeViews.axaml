@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Padma.Views.HomeViews">
+    <!-- Main Area -->
+    <Grid ColumnDefinitions="*, Auto">
+        <Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto *" Background="#070A0B">
+            <Label Grid.Row="0" Foreground="White" Content="Padma" FontSize="33" VerticalAlignment="Top"
+                   HorizontalAlignment="Center" Margin="10" />
+            <ToggleButton PointerEntered="HideConsole_Hovered"
+                          PointerExited="HideConsole_NotHovered"
+                          Grid.Row="0"
+                          Name="HideOrShowConsole"
+                          Background="Transparent"
+                          VerticalAlignment="Top"
+                          HorizontalAlignment="Right"
+                          IsCheckedChanged="ToggleButton_OnIsCheckedChanged">
+                <StackPanel>
+                    <Image Classes="Console-unchecked" Source="/Assets/console-64.png" Width="25" />
+                    <Svg Classes="Console-checked" Path="/Assets/console-64-crossed.svg" Width="25" />
+                    <TextBlock Name="HideConsoleHover" Text="Hide Logs" FontSize="10" Foreground="White"
+                               IsVisible="False" />
+                </StackPanel>
+            </ToggleButton>
+            <Image Grid.Row="1" Name="Thumbnail" Source="/Assets/anime-wave.gif" Width="240" Height="125" />
+            <Label Grid.Row="2"
+                   Foreground="White"
+                   Name="WorkshopTitle"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Margin="0,5,0,0"
+                   Content="Created by Codecoo"
+                   FontSize="17" />
+            <Label Grid.Row="3" Foreground="White" Content="Mod ID" HorizontalAlignment="Center" Margin="0,5,140,5" />
+            <Label Grid.Row="3" Foreground="White" Content="App ID" HorizontalAlignment="Center" Margin="140,5,0,5" />
+            <TextBox Foreground="Black" Name="ModId" FontSize="11" TextAlignment="Center" Background="White"
+                     Padding="8" Grid.Row="4" Width="85" Height="30" Margin="0,0,140,5" />
+            <TextBox Foreground="Black" Name="Appid" FontSize="11" TextAlignment="Center" Background="White"
+                     Padding="8" Grid.Row="4" Width="85" Height="30" Margin="140,0,0,5" />
+            <TextBox Watermark="Enter Steam Workshop Url" TextChanged="ExtractAppIdandWorkshopId" Name="WorkshopUrl"
+                     Grid.Row="5" Width="254" Height="20" Margin="10" />
+            <Button Name="DownloaderControlButton" Click="DownloadButton_OnClick" Classes="Small" Grid.Row="6"
+                    Height="40" HorizontalAlignment="Center" Width="120" Background="#1434A4">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Svg Path="/Assets/cloud_download.svg" Margin="0,0,5,0" />
+                    <TextBlock Text="Download" VerticalAlignment="Center" Foreground="White" />
+                </StackPanel>
+            </Button>
+        </Grid>
+        <!-- Console Log Window -->
+        <Grid Name="ConsoleLogWindow" Grid.Column="1" Background="#161C1E" Width="310">
+            <ScrollViewer Margin="10">
+                <TextBox Name="LogOutput" Classes="ConsoleLog" FontSize="11" Width="308" Background="#1B1212"
+                         AcceptsReturn="True" Height="431" IsReadOnly="True" Foreground="White" Text="Test" />
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

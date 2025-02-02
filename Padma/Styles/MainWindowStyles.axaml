@@ -1,0 +1,34 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <!-- Add Controls for Previewer Here -->
+        </Border>
+    </Design.PreviewWith>
+
+    <!-- Add Styles Here -->
+    <Style Selector="TabItem">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid Name="PART_Root">
+                    <!-- Custom header content -->
+                    <ContentPresenter
+                        Name="PART_Header"
+                        Content="{TemplateBinding Header}"
+                        ContentTemplate="{TemplateBinding HeaderTemplate}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left"
+                        Width="48" />
+                    <!-- Remove selection indicator -->
+                    <Border Name="SelectionIndicator"
+                            Background="Transparent"
+                            IsVisible="False" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="TabControl">
+        <Setter Property="Background" Value="#161C1E" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+</Styles>
