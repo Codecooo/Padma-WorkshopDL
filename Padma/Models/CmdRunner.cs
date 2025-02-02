@@ -116,7 +116,6 @@ public class CmdRunner
             {
                 if (!string.IsNullOrEmpty(e.Data))
                     await LogAsync($"Error: {e.Data}");
-                Success = false;
             };
 
             process.Start();

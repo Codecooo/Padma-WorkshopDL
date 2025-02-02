@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using LiteDB;
 using ReactiveUI;
+using System.Reactive.Subjects;
+using System.Reactive;
 
 namespace Padma.Models;
 
@@ -19,7 +21,8 @@ public class LiteDbHistory
 public class SaveHistory : ReactiveObject, IDisposable
 {
     private readonly LiteDatabase _db;
-    private bool _newHistory;
+    public bool HistoryEnabled = true;
+    public Subject<Unit> HistoryChangedSignal { get; } = new Subject<Unit>();
     public SaveHistory()
     {
         _db = new LiteDatabase("/home/lagita/RiderProjects/Padma/Padma/LiteDB/history.db");
@@ -31,13 +34,7 @@ public class SaveHistory : ReactiveObject, IDisposable
     {
         _db.Dispose();
     }
-
-    public bool NewHistory
-    {
-        get => _newHistory;
-        set => this.RaiseAndSetIfChanged(ref _newHistory, value);
-    }
-
+    
     public event Func<string, Task>? LogAsync;
 
     public async Task SaveHistoryAsync(string workshopTitle, string workshopUrl, string downloadLocation)
@@ -51,7 +48,7 @@ public class SaveHistory : ReactiveObject, IDisposable
             DownloadLocation = downloadLocation,
         };
         History.Insert(historyEntry);
-        NewHistory = true;
+        HistoryChangedSignal.OnNext(Unit.Default);
     }
     
     public IEnumerable<LiteDbHistory> GetAllHistoryList()

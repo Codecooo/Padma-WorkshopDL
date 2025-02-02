@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Padma.Models;
 using ReactiveUI;
-using System.Reactive.Linq;
+using Avalonia.Threading;
 
 namespace Padma.ViewModels;
 
@@ -12,7 +12,6 @@ public class HistoryViewModel : ReactiveObject
     private readonly SaveHistory _history;
     private ObservableCollection<LiteDbHistory> _historyList = new();
     private ObservableCollection<LiteDbHistory> _filteredHistory = new();
-    private string _updatedList = string.Empty;
     private string? _searchText;
 
     public HistoryViewModel(SaveHistory db)
@@ -23,10 +22,8 @@ public class HistoryViewModel : ReactiveObject
         // React to changes in SearchText
         this.WhenAnyValue(x => x.SearchText)
             .Subscribe(SearchHistory);
-        this.WhenAnyValue(x => x._history.NewHistory)
-            .Where(newHistory => newHistory)
-            .Do(_ => UpdateUiIfNewAdded())
-            .Subscribe();   
+        _history.HistoryChangedSignal
+            .Subscribe(_ => UpdateUiIfNewAdded());
     }
     
     public ObservableCollection<LiteDbHistory> HistoryList
@@ -50,7 +47,7 @@ public class HistoryViewModel : ReactiveObject
     private void LoadHistory()
     {
         var allhistory = _history.GetAllHistoryList().ToList();
-        HistoryList = new ObservableCollection<LiteDbHistory>(allhistory);
+        HistoryList = new ObservableCollection<LiteDbHistory>(allhistory); // Initialize with all games
         FilteredHistory = new ObservableCollection<LiteDbHistory>(allhistory); // Initialize with all games
     }
 
@@ -74,8 +71,9 @@ public class HistoryViewModel : ReactiveObject
 
     private void UpdateUiIfNewAdded()
     {
-        LoadHistory();
-        _history.NewHistory = false;
-        _history.NewHistory = true;
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            LoadHistory();
+        });
     }
 }

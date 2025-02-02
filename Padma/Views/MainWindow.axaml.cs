@@ -15,9 +15,7 @@ public partial class MainWindow : Window
             : App.ServiceProvider.GetRequiredService<MainWindowViewModel>())
     {
     }
-
-
-
+    
     public MainWindow(MainWindowViewModel viewModel)
     {
         InitializeComponent();
@@ -26,4 +24,5 @@ public partial class MainWindow : Window
             DataContext = viewModel;
         });
     }
+    
 }

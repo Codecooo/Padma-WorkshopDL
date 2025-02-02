@@ -13,6 +13,7 @@
         <entry key="Padma/Views/HomeViews.axaml" value="Padma/Padma.csproj" />
         <entry key="Padma/Views/HoverLabels.axaml" value="Padma/Padma.csproj" />
         <entry key="Padma/Views/MainWindow.axaml" value="Padma/Padma.csproj" />
+        <entry key="Padma/Views/SettingsViews.axaml" value="Padma/Padma.csproj" />
         <entry key="Padma/Views/SupportedGamesViews.axaml" value="Padma/Padma.csproj" />
       </map>
     </option>

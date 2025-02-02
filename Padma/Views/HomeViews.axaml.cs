@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Padma.Models;
 using Padma.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Padma.Views;
 
@@ -16,7 +17,7 @@ public partial class HomeViews : UserControl
     public HomeViews()
     {
         InitializeComponent();
-        _history = new SaveHistory();
+        _history = App.ServiceProvider.GetRequiredService<SaveHistory>();
         _runner = new CmdRunner();
         _findThumbnailLoader = new ThumbnailLoader();
         _appIdFinder = new AppIdFinder();
@@ -131,7 +132,7 @@ public partial class HomeViews : UserControl
             finally
             {
                 downloadButton.IsEnabled = true;
-                if (_runner.Success)
+                if (_runner.Success && _history.HistoryEnabled)
                     await SaveHistory();
                 await UILogAsync("All processes finished.");
             }
