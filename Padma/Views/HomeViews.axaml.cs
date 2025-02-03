@@ -30,15 +30,11 @@ public partial class HomeViews : UserControl
     }
 
     private void HideConsole_Hovered(object? sender, PointerEventArgs e)
-    {
-        HideConsoleHover.IsVisible = true;
-    }
-
+        => HideConsoleHover.IsVisible = true;
+    
     private void HideConsole_NotHovered(object? sender, PointerEventArgs e)
-    {
-        HideConsoleHover.IsVisible = false;
-    }
-
+       => HideConsoleHover.IsVisible = false;
+    
     private void ChangeLabelsBasedOnCheck()
     {
         if (HideOrShowConsole.IsChecked ?? true)
@@ -141,13 +137,15 @@ public partial class HomeViews : UserControl
             downloadButton.IsEnabled = false;
             try
             {
+                if (_history.HistoryEnabled)
+                    await SaveHistory();
+                _history.DownloadStatusChange = "Downloading";
                 await _runner.RunSteamCmd(WorkshopId, appId);
             }
             finally
             {
+                _history.DownloadStatusChange = _runner.Success ? "Finished" : "Failed";
                 downloadButton.IsEnabled = true;
-                if (_runner.Success && _history.HistoryEnabled)
-                    await SaveHistory();
                 await UILogAsync("All processes finished.");
             }
         }
@@ -163,6 +161,21 @@ public partial class HomeViews : UserControl
             ChangeLabelsBasedOnCheck();
         }
     }
+    
+    private void CancelDownloadOn(object? sender, RoutedEventArgs e)
+    {
+        var downloadButton = this.FindControl<Button>("ConfirmButton");
+        try
+        {
+            _ = _runner.KillSteamCmd();
+        }
+        finally
+        {
+            if (downloadButton is not null) 
+                downloadButton.Content = "Canceled";
+        }
+    }
+
 
     #region Private fields
 
@@ -174,7 +187,7 @@ public partial class HomeViews : UserControl
     private string appId;
     private string _workshopTitle;
     private string _thumbnailUrl;
-    private bool _isHovered;
 
     #endregion
+
 }

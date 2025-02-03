@@ -12,6 +12,7 @@ public class SupportedGamesViewModel : ReactiveObject
     private ObservableCollection<SupportedGamesData> _filteredGames = new();
     private ObservableCollection<SupportedGamesData> _games = new();
     private string? _searchText;
+    private bool _noGamesFound;
 
     public SupportedGamesViewModel(SupportedGames db)
     {
@@ -21,6 +22,8 @@ public class SupportedGamesViewModel : ReactiveObject
         // React to changes in SearchText
         this.WhenAnyValue(x => x.SearchText)
             .Subscribe(SearchGames);
+        this.WhenAnyValue(x => x.FilteredGames)
+            .Subscribe(_ => NoGamesFound = !FilteredGames.Any());
     }
 
     public ObservableCollection<SupportedGamesData> Games
@@ -66,4 +69,11 @@ public class SupportedGamesViewModel : ReactiveObject
             FilteredGames = new ObservableCollection<SupportedGamesData>(filtered);
         }
     }
+
+    public bool NoGamesFound
+    {
+        get => _noGamesFound;
+        set => this.RaiseAndSetIfChanged(ref _noGamesFound, value);
+    }
+    
 }

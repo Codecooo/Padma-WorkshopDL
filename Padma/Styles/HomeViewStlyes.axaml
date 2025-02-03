@@ -30,6 +30,11 @@
         <Setter Property="BorderThickness" Value="0"></Setter>
         <Setter Property="BorderBrush" Value="{DynamicResource ItemsDarkBrush}"></Setter>
     </Style>
+    <Style Selector="Button.ConfirmButton">
+        <Setter Property="BorderThickness" Value="0"></Setter>
+        <Setter Property="Padding" Value="0"></Setter>
+        <Setter Property="Background" Value="{DynamicResource MidnightBlueBrush}"></Setter>
+    </Style>
     <Style Selector="ToggleButton">
         <Style Selector="^:checked /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="Transparent" />
@@ -46,5 +51,16 @@
     </Style>
     <Style Selector="ToggleButton:unchecked Image.Console-unchecked">
         <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="Border.DownloadStatus">
+        <!-- <Setter Property="RenderTransform"> -->
+        <!--     <TranslateTransform X="0" Y="0"></TranslateTransform> -->
+        <!-- </Setter> -->
+        <!-- <Setter Property="RenderTransformOrigin" Value="0,0"></Setter> -->
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Height" Duration="0:0:0.5" Easing="QuadraticEaseIn"></DoubleTransition>
+            </Transitions>
+        </Setter>
     </Style>
 </Styles>

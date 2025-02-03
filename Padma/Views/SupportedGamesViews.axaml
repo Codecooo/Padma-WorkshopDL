@@ -6,13 +6,14 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:SupportedGamesViewModel"
              x:Class="Padma.Views.SupportedGamesViews">
-    <Grid RowDefinitions="Auto, Auto, *" Background="#070A0B">
+    <Grid RowDefinitions="Auto, Auto, Auto, *" Background="#070A0B">
         <Label Grid.Row="0" FontSize="28" VerticalAlignment="Top" HorizontalAlignment="Center"
                Content="Supported Games" Foreground="Gray" />
             <TextBox Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding SearchText}" Margin="5"
                      Width="550" Height="30" AcceptsReturn="True"
                      Watermark="Enter your games name if your games are supported" />
-        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+        <TextBlock Grid.Row="3" VerticalAlignment="Center" IsVisible="{Binding NoGamesFound}" Text="Nothing to show here" Foreground="White" Opacity="0.3" FontSize="26" HorizontalAlignment="Center"/>                
+        <ScrollViewer Grid.Row="3" HorizontalScrollBarVisibility="Disabled">
             <StackPanel>
                 <ItemsControl ItemsSource="{Binding FilteredGames}">
                     <ItemsControl.ItemsPanel>

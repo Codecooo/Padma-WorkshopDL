@@ -23,10 +23,11 @@ public class HistoryViewModel : ReactiveObject
         this.WhenAnyValue(x => x.SearchText)
             .Subscribe(SearchHistory);
         
-        // React to any changes with FilteredHistory and if so it subscribe to IfDontHaveHistory
+        // React to any changes with FilteredHistory and if so it subscribe to NoHistory
+        // Where the value of NoHistory based on whether FilteredHistory contains any list and negates it
         // Used to set visibility of placeholder textblock
         this.WhenAnyValue(x => x.FilteredHistory)
-            .Subscribe(_ => IfDontHaveHistory());
+            .Subscribe(_ => NoHistory = !FilteredHistory.Any());
         
         // React to changes signal in SaveHistory and then subscribe to LoadHistory method
         // Will be used to automatically refresh the UI if new download added or history is cleared in the database
@@ -98,18 +99,9 @@ public class HistoryViewModel : ReactiveObject
     /// <summary>
     /// Set the visibility of placeholder textblock Nothing to show here based if it has download history or not
     /// </summary>
-    public bool HasHistory
+    public bool NoHistory
     {
         get => _dontHaveHistory;
         set => this.RaiseAndSetIfChanged(ref _dontHaveHistory, value);
-    }
-    
-    /// <summary>
-    /// If history list is zero it will return true so it would be visible
-    /// If its not it would return false and not visible
-    /// </summary>
-    private void IfDontHaveHistory()
-    {
-        _dontHaveHistory = _filteredHistory.Count == 0;
     }
 }

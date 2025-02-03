@@ -38,7 +38,7 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-            <TextBlock IsVisible="{Binding HasHistory}" Text="Nothing to show here" Foreground="White" Opacity="0.3" FontSize="26" VerticalAlignment="Center"  HorizontalAlignment="Center"/>                
+            <TextBlock IsVisible="{Binding NoHistory}" Text="Nothing to show here" Foreground="White" Opacity="0.3" FontSize="26" VerticalAlignment="Center"  HorizontalAlignment="Center"/>                
         </Grid>
     </Grid>
 </UserControl>

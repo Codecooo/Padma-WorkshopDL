@@ -11,7 +11,7 @@ public partial class MainWindow : Window
     public MainWindow() 
         : this(Design.IsDesignMode 
             ? new MainWindowViewModel(new SupportedGamesViewModel(new SupportedGames()), 
-                new HistoryViewModel(new SaveHistory())) 
+                new HistoryViewModel(new SaveHistory()), new HomeViewModel(new SaveHistory())) 
             : App.ServiceProvider.GetRequiredService<MainWindowViewModel>())
     {
     }

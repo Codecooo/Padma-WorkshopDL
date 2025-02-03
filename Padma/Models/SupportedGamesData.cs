@@ -6,8 +6,8 @@ namespace Padma.Models;
 
 public class SupportedGamesData
 {
-    [BsonId] public int Id { get; set; }
-
+    [BsonId]
+    public int Id { get; set; }
     public string AppId { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
 }

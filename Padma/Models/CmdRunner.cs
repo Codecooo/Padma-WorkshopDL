@@ -109,7 +109,6 @@ public class CmdRunner
             {
                 if (!string.IsNullOrEmpty(e.Data))
                     await LogAsync($"Output: {e.Data}");
-                Success = true;
             };
 
             process.ErrorDataReceived += async (sender, e) =>
@@ -123,15 +122,31 @@ public class CmdRunner
             // Begin reading output streams asynchronously
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
-
             await process.WaitForExitAsync();
 
             await LogAsync($"SteamCMD process exited with code {process.ExitCode}");
+            if (process.ExitCode == 0)
+            {
+                Success = true;
+                Console.WriteLine($"If its success it will output {Success}");
+            }
         }
         catch (Exception ex)
         {
             await LogAsync($"An error occurred: {ex.Message}");
             Success = false;
+            Console.WriteLine($"If its error it will output {Success}");
         }
+    }
+
+    public async Task KillSteamCmd()
+    {
+        Success = false;
+        await LogAsync("Killing steamcmd...");
+        foreach (var process in Process.GetProcessesByName("steamcmd"))
+        {
+            process.Kill();
+        }
+        await LogAsync("Download has been canceled");
     }
 }

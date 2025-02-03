@@ -27,6 +27,7 @@ public class App : Application
         // Register services with DI container
         services.AddSingleton<SupportedGames>(); // Singleton for database access
         services.AddSingleton<SaveHistory>(); // Singleton for database access
+        services.AddSingleton<HomeViewModel>(); // Singleton for ViewModel
         services.AddSingleton<SupportedGamesViewModel>(); // Singleton for ViewModel
         services.AddSingleton<HistoryViewModel>(); // Singleton for ViewModel
         services.AddSingleton<MainWindowViewModel>(); // Singleton for ViewModel
