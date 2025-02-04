@@ -3,12 +3,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Padma.ViewModels;assembly=Padma"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
              x:DataType="vm:HomeViewModel"
              x:Class="Padma.Views.HomeViews">
     <!-- Main Area -->
-    <Grid ColumnDefinitions="*, Auto">
-        <Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto *" Background="#070A0B">
+    <Grid Background="{DynamicResource MainDarkBrush}" ColumnDefinitions="*, Auto">
+        <StackPanel  Grid.Column="0" Background="{DynamicResource MainDarkBrush}">
+            <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, *">
             <Label Grid.Row="0" Foreground="White" Content="Padma" FontSize="33" VerticalAlignment="Top"
                    HorizontalAlignment="Center" Margin="10" />
             <ToggleButton PointerEntered="HideConsole_Hovered"
@@ -43,14 +44,15 @@
                      Padding="8" Grid.Row="4" Width="85" Height="30" Margin="140,0,0,5" />
             <TextBox Watermark="Enter Steam Workshop Url" TextChanged="ExtractAppIdandWorkshopId" Name="WorkshopUrl"
                      Grid.Row="5" Width="254" Height="20" Margin="10" />
-            <Button Name="DownloaderControlButton" Click="DownloadButton_OnClick" Classes="Small" Grid.Row="6"
+            <TextBlock HorizontalAlignment="Center" Margin="0,0,0,6" Name="FileSizeInfo" Foreground="White" Grid.Row="6" IsVisible="False"/>
+            <Button Name="DownloaderControlButton" Click="DownloadButton_OnClick" Classes="Small" Grid.Row="7"
                     Height="40" HorizontalAlignment="Center" Width="120" Background="#1434A4">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Svg Path="/Assets/cloud_download.svg" Margin="0,0,5,0" />
                     <TextBlock Text="Download" VerticalAlignment="Center" Foreground="White" />
                 </StackPanel>
             </Button>
-            <ItemsControl Grid.Row="7" ItemsSource="{Binding HistoryList}">
+            <ItemsControl VerticalAlignment="Bottom" Grid.Row="8" ItemsSource="{Binding HistoryList}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <VirtualizingStackPanel Orientation="Vertical"/>
@@ -58,9 +60,11 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Classes="DownloadStatus" Width="150" Height="60" VerticalAlignment="Bottom" Background="{DynamicResource MidnightBlueBrush}" CornerRadius="5" HorizontalAlignment="Left">
+                        <Border Classes="DownloadStatus" VerticalAlignment="Bottom" Background="{DynamicResource MidnightBlueBrush}" CornerRadius="5" HorizontalAlignment="Left">
                             <StackPanel Spacing="2">
                                 <TextBlock FontSize="11" Margin="5,5,0,0" Foreground="White" Text="{Binding WorkshopTitle}"/>
+                                <ProgressBar Foreground="#478778" Value="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).DownloadProgress}"
+                                             ShowProgressText="True" Minimum="0" Maximum="100"/>
                                 <Button Name="ConfirmButton" Click="CancelDownloadOn" Content="Cancel" FontSize="10" Foreground="IndianRed" Classes="ConfirmButton"  Margin="0,0,5,0"  HorizontalAlignment="Right"/>
                                 <TextBlock FontSize="11" Margin="5,0,0,5" VerticalAlignment="Bottom" Foreground="White" 
                                            Text="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).DownloadStatusNow}"/>
@@ -70,11 +74,12 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </Grid>
+        </StackPanel>
         <!-- Console Log Window -->
         <Grid Name="ConsoleLogWindow" Grid.Column="1" Background="#161C1E" Width="310">
             <ScrollViewer VerticalScrollBarVisibility="Hidden" Margin="10">
                 <TextBox Name="LogOutput" Classes="ConsoleLog" FontSize="11" Width="308" Background="#1B1212"
-                         AcceptsReturn="True" Height="431" IsReadOnly="True" Foreground="White" Text="Test" />
+                         AcceptsReturn="True" IsReadOnly="True" Foreground="White" Text="Test" />
             </ScrollViewer>
         </Grid>
     </Grid>

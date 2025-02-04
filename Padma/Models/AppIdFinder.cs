@@ -11,6 +11,9 @@ public class AppIdFinder
     public string AppId;
     public string ModTitle;
     public string ThumbnailUrl;
+    private double FileSize;
+    public long FileSizeBytes;
+    public string FileSizeInfo;
     public event Func<string, Task>? LogAsync;
 
     public async Task AppFinder(string workshopId)
@@ -36,7 +39,6 @@ public class AppIdFinder
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    await LogAsync($"Raw JSON response: {json}");
 
                     var data = JObject.Parse(json);
 
@@ -44,12 +46,24 @@ public class AppIdFinder
                     var appId = data["response"]?["publishedfiledetails"]?[0]?["consumer_app_id"]?.Value<string>();
                     var modTitle = data["response"]?["publishedfiledetails"]?[0]?["title"]?.Value<string>();
                     var thumbnailUrl = data["response"]?["publishedfiledetails"]?[0]?["preview_url"]?.Value<string>();
+                    var fileSize = data["response"]?["publishedfiledetails"]?[0]?["file_size"]?.Value<long>();
                     if (!string.IsNullOrWhiteSpace(appId) && !string.IsNullOrWhiteSpace(modTitle) &&
-                        !string.IsNullOrWhiteSpace(thumbnailUrl))
+                        !string.IsNullOrWhiteSpace(thumbnailUrl) && fileSize > 0)
                     {
                         ModTitle = modTitle;
                         AppId = appId;
                         ThumbnailUrl = thumbnailUrl;
+                        FileSizeBytes = (long)fileSize;
+                        FileSize = (double)(fileSize / 1_048_576.0);
+                        if (Math.Floor(FileSize) >= 1000)
+                        {
+                            FileSize /= 1024;
+                            FileSizeInfo = $"{FileSize:F1} GB";
+                        }
+                        else
+                        {
+                            FileSizeInfo = $"{FileSize:F1} MB";
+                        }
                         await LogAsync($"Found AppId {AppId} for workshop item {workshopId}");
                     }
                     else
@@ -67,7 +81,7 @@ public class AppIdFinder
             catch (Exception ex)
             {
                 // Handle errors (e.g., network issues)
-                await LogAsync($"Error finding AppID: {ex.Message}");
+                await LogAsync($"Error finding AppID or Filesize: {ex.Message}");
             }
         }
     }

@@ -20,6 +20,7 @@ public partial class HomeViews : UserControl
         InitializeComponent();
         AutoScrollLogs();
         _history = App.ServiceProvider.GetRequiredService<SaveHistory>();
+        _homeViewModel = App.ServiceProvider.GetRequiredService<HomeViewModel>();
         _runner = new CmdRunner();
         _findThumbnailLoader = new ThumbnailLoader();
         _appIdFinder = new AppIdFinder();
@@ -91,7 +92,8 @@ public partial class HomeViews : UserControl
             await _history.SaveHistoryAsync(
                 _workshopTitle,
                 WorkshopUrl.Text,
-                "[DefaultDownloadPath]"); // Replace with actual path
+                "[DefaultDownloadPath]",
+                _appIdFinder.FileSizeInfo); // Replace with actual path
     }
 
     private async void ExtractAppIdandWorkshopId(object? sender, RoutedEventArgs e)
@@ -122,6 +124,8 @@ public partial class HomeViews : UserControl
                 Thumbnail.Source = bitmap;
                 ModId.Text = WorkshopId;
                 Appid.Text = appId;
+                FileSizeInfo.IsVisible = true;
+                FileSizeInfo.Text = _appIdFinder.FileSizeInfo;
             });
         }
         catch (Exception ex)
@@ -137,6 +141,9 @@ public partial class HomeViews : UserControl
             downloadButton.IsEnabled = false;
             try
             {
+                _homeViewModel.AppId = _appIdFinder.AppId;
+                _homeViewModel.WWorkshopId = WorkshopId;
+                _homeViewModel.TotalSize = _appIdFinder.FileSizeBytes;
                 if (_history.HistoryEnabled)
                     await SaveHistory();
                 _history.DownloadStatusChange = "Downloading";
@@ -167,12 +174,17 @@ public partial class HomeViews : UserControl
         var downloadButton = this.FindControl<Button>("ConfirmButton");
         try
         {
+            if (downloadButton is not null) 
+                downloadButton.IsEnabled = false;
             _ = _runner.KillSteamCmd();
         }
         finally
         {
-            if (downloadButton is not null) 
+            if (downloadButton is not null)
+            {
                 downloadButton.Content = "Canceled";
+                downloadButton.IsEnabled = true;
+            }
         }
     }
 
@@ -183,6 +195,7 @@ public partial class HomeViews : UserControl
     private readonly CmdRunner _runner;
     private readonly ThumbnailLoader _findThumbnailLoader;
     private readonly SaveHistory _history;
+    private readonly HomeViewModel _homeViewModel;
     private string WorkshopId;
     private string appId;
     private string _workshopTitle;

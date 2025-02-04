@@ -26,13 +26,16 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="{DynamicResource ItemsDarkBrush}" Padding="10" Margin="5">
-                                <StackPanel>
-                                    <TextBlock Foreground="Wheat" Text="{Binding WorkshopTitle}"/>
-                                    <TextBox Classes="HistoryUrl" IsReadOnly="True" Foreground="Wheat" Text="{Binding WorkshopUrl}"/>
-                                    <TextBlock Foreground="Wheat" Text="{Binding Date}"/>
-                                    <Svg HorizontalAlignment="Right" VerticalAlignment="Top" Path="/Assets/folder.svg" Width="30" Height="30"/>
-                                </StackPanel>
+                            <Border Height="83" Background="{DynamicResource ItemsDarkBrush}" Padding="10" Margin="5">
+                                <Grid RowDefinitions="Auto, Auto, Auto">
+                                    <TextBlock Grid.Row="0" FontSize="13" Foreground="Wheat" Text="{Binding WorkshopTitle}"/>
+                                    <Button ZIndex="1" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Right">
+                                        <Svg Path="/Assets/folder.svg" Width="20" Height="20"/>
+                                    </Button>
+                                    <TextBox Grid.Row="1" FontSize="12" Classes="HistoryUrl" IsReadOnly="True" Foreground="Wheat" Text="{Binding WorkshopUrl}"/>
+                                    <TextBlock Margin="0,7,0,0" Grid.Row="2" FontSize="11" HorizontalAlignment="Right" Foreground="Wheat" Text="{Binding DownloadSize}"/>
+                                    <TextBlock Grid.Row="2" FontSize="13" Foreground="Wheat" Text="{Binding Date}"/>
+                                </Grid>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

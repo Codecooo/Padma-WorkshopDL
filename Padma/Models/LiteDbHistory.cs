@@ -17,6 +17,7 @@ public class LiteDbHistory
     public string WorkshopUrl { get; set; }
     public string DownloadLocation { get; set; }
     public string DownloadStatus { get; set; }
+    public string DownloadSize { get; set; }
 }
 
 public class SaveHistory : ReactiveObject, IDisposable
@@ -42,7 +43,7 @@ public class SaveHistory : ReactiveObject, IDisposable
     
     public event Func<string, Task>? LogAsync;
 
-    public async Task SaveHistoryAsync(string workshopTitle, string workshopUrl, string downloadLocation)
+    public async Task SaveHistoryAsync(string workshopTitle, string workshopUrl, string downloadLocation, string downloadSize)
     {
         await LogAsync($"Saving history for {workshopTitle}");
         var historyEntry = new LiteDbHistory
@@ -51,7 +52,8 @@ public class SaveHistory : ReactiveObject, IDisposable
             WorkshopTitle = workshopTitle,
             WorkshopUrl = workshopUrl,
             DownloadLocation = downloadLocation,
-            DownloadStatus = DownloadStatusChange
+            DownloadStatus = DownloadStatusChange,
+            DownloadSize = downloadSize
         };
         History.Insert(historyEntry);
         HistoryChangedSignal.OnNext(Unit.Default);
