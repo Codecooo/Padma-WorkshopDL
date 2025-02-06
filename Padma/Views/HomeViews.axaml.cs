@@ -21,6 +21,7 @@ public partial class HomeViews : UserControl
         AutoScrollLogs();
         _history = App.ServiceProvider.GetRequiredService<SaveHistory>();
         _homeViewModel = App.ServiceProvider.GetRequiredService<HomeViewModel>();
+        _downloadProgressTracker = App.ServiceProvider.GetRequiredService<DownloadProgressTracker>();
         _runner = new CmdRunner();
         _findThumbnailLoader = new ThumbnailLoader();
         _appIdFinder = new AppIdFinder();
@@ -141,12 +142,13 @@ public partial class HomeViews : UserControl
             downloadButton.IsEnabled = false;
             try
             {
-                _homeViewModel.AppId = _appIdFinder.AppId;
-                _homeViewModel.WWorkshopId = WorkshopId;
-                _homeViewModel.TotalSize = _appIdFinder.FileSizeBytes;
                 if (_history.HistoryEnabled)
                     await SaveHistory();
+                _downloadProgressTracker.AppId = _appIdFinder.AppId;
+                _downloadProgressTracker.WorkshopId = WorkshopId;
+                _downloadProgressTracker.TotalSize = _appIdFinder.FileSizeBytes;
                 _history.DownloadStatusChange = "Downloading";
+                _runner.DownloadPath = "/home/lagita/Downloads";
                 await _runner.RunSteamCmd(WorkshopId, appId);
             }
             finally
@@ -196,6 +198,7 @@ public partial class HomeViews : UserControl
     private readonly ThumbnailLoader _findThumbnailLoader;
     private readonly SaveHistory _history;
     private readonly HomeViewModel _homeViewModel;
+    private readonly DownloadProgressTracker _downloadProgressTracker;
     private string WorkshopId;
     private string appId;
     private string _workshopTitle;

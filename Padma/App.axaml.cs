@@ -22,19 +22,11 @@ public class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        var services = new ServiceCollection();
-
-        // Register services with DI container
-        services.AddSingleton<SupportedGames>(); // Singleton for database access
-        services.AddSingleton<SaveHistory>(); // Singleton for database access
-        services.AddSingleton<HomeViewModel>(); // Singleton for ViewModel
-        services.AddSingleton<SupportedGamesViewModel>(); // Singleton for ViewModel
-        services.AddSingleton<HistoryViewModel>(); // Singleton for ViewModel
-        services.AddSingleton<MainWindowViewModel>(); // Singleton for ViewModel
-        services.AddTransient<MainWindow>(); // Transient for the UI window
+        var collection = new ServiceCollection();
+        AddCommonServices(collection);
 
         // Build the service provider
-        ServiceProvider = services.BuildServiceProvider();
+        ServiceProvider = collection.BuildServiceProvider();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -43,6 +35,19 @@ public class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static void AddCommonServices (IServiceCollection collection)
+    {
+        // Register services with DI container
+        collection.AddSingleton<SupportedGames>(); // Singleton for database access
+        collection.AddSingleton<SaveHistory>(); // Singleton for database access
+        collection.AddSingleton<HomeViewModel>(); // Singleton for ViewModel
+        collection.AddSingleton<SupportedGamesViewModel>(); // Singleton for ViewModel
+        collection.AddSingleton<HistoryViewModel>(); // Singleton for ViewModel
+        collection.AddSingleton<MainWindowViewModel>(); // Singleton for ViewModel
+        collection.AddSingleton<DownloadProgressTracker>(); // Singleton for ViewModel
+        collection.AddTransient<MainWindow>(); // Transient for the UI window
     }
 
     private void DisableAvaloniaDataAnnotationValidation()

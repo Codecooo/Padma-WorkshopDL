@@ -8,7 +8,6 @@
              x:Class="Padma.Views.HomeViews">
     <!-- Main Area -->
     <Grid Background="{DynamicResource MainDarkBrush}" ColumnDefinitions="*, Auto">
-        <StackPanel  Grid.Column="0" Background="{DynamicResource MainDarkBrush}">
             <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, *">
             <Label Grid.Row="0" Foreground="White" Content="Padma" FontSize="33" VerticalAlignment="Top"
                    HorizontalAlignment="Center" Margin="10" />
@@ -55,18 +54,18 @@
             <ItemsControl VerticalAlignment="Bottom" Grid.Row="8" ItemsSource="{Binding HistoryList}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <VirtualizingStackPanel Orientation="Vertical"/>
+                        <VirtualizingStackPanel VerticalAlignment="Bottom" Orientation="Vertical"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Classes="DownloadStatus" VerticalAlignment="Bottom" Background="{DynamicResource MidnightBlueBrush}" CornerRadius="5" HorizontalAlignment="Left">
+                        <Border Classes="DownloadStatus" Background="{DynamicResource MidnightBlueBrush}" CornerRadius="5" >
                             <StackPanel Spacing="2">
                                 <TextBlock FontSize="11" Margin="5,5,0,0" Foreground="White" Text="{Binding WorkshopTitle}"/>
                                 <ProgressBar Foreground="#478778" Value="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).DownloadProgress}"
                                              ShowProgressText="True" Minimum="0" Maximum="100"/>
                                 <Button Name="ConfirmButton" Click="CancelDownloadOn" Content="Cancel" FontSize="10" Foreground="IndianRed" Classes="ConfirmButton"  Margin="0,0,5,0"  HorizontalAlignment="Right"/>
-                                <TextBlock FontSize="11" Margin="5,0,0,5" VerticalAlignment="Bottom" Foreground="White" 
+                                <TextBlock FontSize="11" Margin="5,0,0,5" VerticalAlignment="Bottom" Foreground="White"
                                            Text="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).DownloadStatusNow}"/>
                             </StackPanel>
                         </Border>
@@ -74,11 +73,10 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </Grid>
-        </StackPanel>
         <!-- Console Log Window -->
         <Grid Name="ConsoleLogWindow" Grid.Column="1" Background="#161C1E" Width="310">
             <ScrollViewer VerticalScrollBarVisibility="Hidden" Margin="10">
-                <TextBox Name="LogOutput" Classes="ConsoleLog" FontSize="11" Width="308" Background="#1B1212"
+                <TextBox Name="LogOutput" Classes="ConsoleLog" FontSize="11" Background="#1B1212"
                          AcceptsReturn="True" IsReadOnly="True" Foreground="White" Text="Test" />
             </ScrollViewer>
         </Grid>

@@ -53,10 +53,6 @@
         <Setter Property="IsVisible" Value="True" />
     </Style>
     <Style Selector="Border.DownloadStatus">
-        <!-- <Setter Property="RenderTransform"> -->
-        <!--     <TranslateTransform X="0" Y="0"></TranslateTransform> -->
-        <!-- </Setter> -->
-        <!-- <Setter Property="RenderTransformOrigin" Value="0,0"></Setter> -->
         <Setter Property="Transitions">
             <Transitions>
                 <DoubleTransition Property="Height" Duration="0:0:0.5" Easing="QuadraticEaseIn"></DoubleTransition>
