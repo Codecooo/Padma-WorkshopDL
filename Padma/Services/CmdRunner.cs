@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Padma.Models;
+namespace Padma.Services;
 
 public class CmdRunner
 {
@@ -14,7 +14,7 @@ public class CmdRunner
     public string DownloadPath = string.Empty;
     public event Func<string, Task>? LogAsync;
 
-    public async Task RunSteamCmd(string WorkshopId, string AppId)
+    public async Task RunSteamCmd(string workshopId, string appId)
     { 
         SteamCmdDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Padma", "SteamCMD");   
         SteamCmdFilePath = Path.Combine(SteamCmdDirPath, "steamcmd.sh");
@@ -30,12 +30,12 @@ public class CmdRunner
             if (files.Length > 0)
             {
                 await LogAsync($"Found steamcmd.sh in {string.Join(", ", files)}");
-                await ModDownloader(WorkshopId, AppId);
+                await ModDownloader(workshopId, appId);
             }
             else
             {
                 await SteamCmdDownloader();
-                await ModDownloader(WorkshopId, AppId);
+                await ModDownloader(workshopId, appId);
             }
         }
         catch (Exception ex)
@@ -60,9 +60,9 @@ public class CmdRunner
         }
     }
 
-    public async Task ModDownloader(string WorkshopId, string AppId)
+    public async Task ModDownloader(string workshopId, string appId)
     {
-        string arguments = $"-c \"\\\"{SteamCmdFilePath}\\\" +force_install_dir \\\"{DownloadPath}\\\" +login anonymous +workshop_download_item {AppId} {WorkshopId} +quit\"";        
+        string arguments = $"-c \"\\\"{SteamCmdFilePath}\\\" +force_install_dir \\\"{DownloadPath}\\\" +login anonymous +workshop_download_item {appId} {workshopId} +quit\"";        
         try
         {
             await RunBash(arguments);

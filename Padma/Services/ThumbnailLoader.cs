@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 
-namespace Padma.ViewModels;
+namespace Padma.Services;
 
 public class ThumbnailLoader
 {

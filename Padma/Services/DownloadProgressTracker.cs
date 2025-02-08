@@ -4,10 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using Padma.ViewModels;
 
-namespace Padma.Models;
+namespace Padma.Services;
 
 public class DownloadProgressTracker : ReactiveObject
 {

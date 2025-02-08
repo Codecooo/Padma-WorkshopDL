@@ -26,10 +26,9 @@
                                IsVisible="False" />
                 </StackPanel>
             </ToggleButton>
-            <Image Grid.Row="1" Name="Thumbnail" Source="/Assets/anime-wave.gif" Width="240" Height="125" />
+            <Image Grid.Row="1" Name="Thumbnail" Source="{Binding ModsThumbnail}" Width="240" Height="125" />
             <Label Grid.Row="2"
                    Foreground="White"
-                   Name="WorkshopTitle"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    Margin="0,5,0,0"
@@ -37,14 +36,14 @@
                    FontSize="17" />
             <Label Grid.Row="3" Foreground="White" Content="Mod ID" HorizontalAlignment="Center" Margin="0,5,140,5" />
             <Label Grid.Row="3" Foreground="White" Content="App ID" HorizontalAlignment="Center" Margin="140,5,0,5" />
-            <TextBox Foreground="Black" Name="ModId" FontSize="11" TextAlignment="Center" Background="White"
+            <TextBox Foreground="Black" Name="ModId" Text="{Binding WorkshopId}" FontSize="11" TextAlignment="Center" Background="White"
                      Padding="8" Grid.Row="4" Width="85" Height="30" Margin="0,0,140,5" />
-            <TextBox Foreground="Black" Name="Appid" FontSize="11" TextAlignment="Center" Background="White"
+            <TextBox Foreground="Black" Name="Appid" Text="{Binding AppId}" FontSize="11" TextAlignment="Center" Background="White"
                      Padding="8" Grid.Row="4" Width="85" Height="30" Margin="140,0,0,5" />
-            <TextBox Watermark="Enter Steam Workshop Url" TextChanged="ExtractAppIdandWorkshopId" Name="WorkshopUrl"
+            <TextBox Watermark="Enter Steam Workshop Url" Text="{Binding ExtractAppIdAndThumbnailCommand, Mode=TwoWay}" Name="WorkshopUrl"
                      Grid.Row="5" Width="254" Height="20" Margin="10" />
             <TextBlock HorizontalAlignment="Center" Margin="0,0,0,6" Name="FileSizeInfo" Foreground="White" Grid.Row="6" IsVisible="False"/>
-            <Button Name="DownloaderControlButton" Click="DownloadButton_OnClick" Classes="Small" Grid.Row="7"
+            <Button Name="DownloaderControlButton" Command="{Binding DownloadButton_OnClickCommand}" IsEnabled="{Binding IsEnabled}" Classes="Small" Grid.Row="7"
                     Height="40" HorizontalAlignment="Center" Width="120" Background="#1434A4">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Svg Path="/Assets/cloud_download.svg" Margin="0,0,5,0" />
@@ -64,7 +63,9 @@
                                 <TextBlock FontSize="11" Margin="5,5,0,0" Foreground="White" Text="{Binding WorkshopTitle}"/>
                                 <ProgressBar Foreground="#478778" Value="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).DownloadProgress}"
                                              ShowProgressText="True" Minimum="0" Maximum="100"/>
-                                <Button Name="ConfirmButton" Click="CancelDownloadOn" Content="Cancel" FontSize="10" Foreground="IndianRed" Classes="ConfirmButton"  Margin="0,0,5,0"  HorizontalAlignment="Right"/>
+                                <Button Command="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).CancelDownloadOnCommand}" 
+                                        Content="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).ButtonContent}" IsEnabled="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).IsEnabled}" 
+                                        FontSize="10" Foreground="IndianRed" Classes="ConfirmButton"  Margin="0,0,5,0"  HorizontalAlignment="Right"/>
                                 <TextBlock FontSize="11" Margin="5,0,0,5" VerticalAlignment="Bottom" Foreground="White"
                                            Text="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).DownloadStatusNow}"/>
                             </StackPanel>

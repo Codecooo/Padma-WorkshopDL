@@ -59,7 +59,7 @@
             <views:SupportedGamesViews DataContext="{Binding GamesViewModel}"/>
         </TabItem>
         <TabItem HeaderTemplate="{StaticResource SettingsTemplate}">
-            <views:SettingsViews/>
+            <views:SettingsViews DataContext="{Binding SettingsViewModel}"/>
         </TabItem>
     </TabControl>
     <Design.DataContext>
