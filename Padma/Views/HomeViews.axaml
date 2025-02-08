@@ -28,11 +28,12 @@
             </ToggleButton>
             <Image Grid.Row="1" Name="Thumbnail" Source="{Binding ModsThumbnail}" Width="240" Height="125" />
             <Label Grid.Row="2"
+                   Name="Titlw"
                    Foreground="White"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    Margin="0,5,0,0"
-                   Content="Created by Codecoo"
+                   Content="{Binding WorkshopTitle}"
                    FontSize="17" />
             <Label Grid.Row="3" Foreground="White" Content="Mod ID" HorizontalAlignment="Center" Margin="0,5,140,5" />
             <Label Grid.Row="3" Foreground="White" Content="App ID" HorizontalAlignment="Center" Margin="140,5,0,5" />
@@ -40,7 +41,7 @@
                      Padding="8" Grid.Row="4" Width="85" Height="30" Margin="0,0,140,5" />
             <TextBox Foreground="Black" Name="Appid" Text="{Binding AppId}" FontSize="11" TextAlignment="Center" Background="White"
                      Padding="8" Grid.Row="4" Width="85" Height="30" Margin="140,0,0,5" />
-            <TextBox Watermark="Enter Steam Workshop Url" Text="{Binding ExtractAppIdAndThumbnailCommand, Mode=TwoWay}" Name="WorkshopUrl"
+            <TextBox Watermark="Enter Steam Workshop Url" Text="{Binding WorkshopUrl}"
                      Grid.Row="5" Width="254" Height="20" Margin="10" />
             <TextBlock HorizontalAlignment="Center" Margin="0,0,0,6" Name="FileSizeInfo" Foreground="White" Grid.Row="6" IsVisible="False"/>
             <Button Name="DownloaderControlButton" Command="{Binding DownloadButton_OnClickCommand}" IsEnabled="{Binding IsEnabled}" Classes="Small" Grid.Row="7"

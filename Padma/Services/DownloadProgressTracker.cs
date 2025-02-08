@@ -4,13 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Reactive.Linq;
-using Padma.ViewModels;
 
 namespace Padma.Services;
 
 public class DownloadProgressTracker : ReactiveObject
 {
-    private readonly HomeViewModel _homeViewModel;
+    public event Action<int>? ProgressUpdated;
     public long TotalSize;
     private FileSystemWatcher? _folderWatcher;
     private FileSystemWatcher? _downloadWatcher;
@@ -20,9 +19,8 @@ public class DownloadProgressTracker : ReactiveObject
     // We'll store the download folder path once the folder is created.
     private string _downloadFolderPath = string.Empty;
     
-    public DownloadProgressTracker(HomeViewModel homeViewModel)
+    public DownloadProgressTracker()
     {
-        _homeViewModel = homeViewModel;
         // When both AppId and WorkshopId are provided, start tracking.
         this.WhenAnyValue(x => x.AppId, x => x.WorkshopId,
                 (appId, workshopId) => !string.IsNullOrWhiteSpace(appId) && !string.IsNullOrWhiteSpace(workshopId))
@@ -30,18 +28,18 @@ public class DownloadProgressTracker : ReactiveObject
             .Take(1)
             .Subscribe(_ => StartTrackingDownload(AppId, WorkshopId));
 
-        this.WhenAnyValue(x => x._homeViewModel.DownloadStatusNow)
-            .Subscribe(_ => StopTracking());
+        // this.WhenAnyValue(x => x._homeViewModel.DownloadStatusNow)
+        //     .Subscribe(_ => StopTracking());
     }
 
-    private string _appId;
+    private string _appId = string.Empty;
     public string AppId
     {
         get => _appId;
         set => this.RaiseAndSetIfChanged(ref _appId, value);
     }
 
-    private string _workshopId;
+    private string _workshopId = string.Empty;
     public string WorkshopId
     {
         get => _workshopId;
@@ -123,11 +121,10 @@ public class DownloadProgressTracker : ReactiveObject
                 if (!string.IsNullOrWhiteSpace(_downloadFolderPath) && Directory.Exists(_downloadFolderPath))
                 {
                     long newSize = Directory.GetFiles(_downloadFolderPath, "*", SearchOption.AllDirectories)
-                                        .Sum(file => new FileInfo(file).Length);
+                        .Sum(file => new FileInfo(file).Length);
                     _currentSize = newSize;
                     int downloadPercentage = (int)(Math.Round((double)_currentSize / TotalSize, 2) * 100);
-                    _homeViewModel.DownloadProgress = downloadPercentage;
-                    StopTracking();
+                    ProgressUpdated?.Invoke(downloadPercentage);
                 }
             }
             catch (Exception ex)
@@ -135,14 +132,13 @@ public class DownloadProgressTracker : ReactiveObject
                 Console.WriteLine($"Error recalculating download progress: {ex.Message}");
             }
         }
-        
-        private void StopTracking()
+
+        public void StopTracking()
         {
-            if (_homeViewModel.DownloadStatusNow is "Downloading") return;
             _downloadWatcher?.Dispose();
             _folderWatcher?.Dispose();
             _progressDebounceTimer?.Dispose();
-            _homeViewModel.DownloadProgress = 0;
+            ProgressUpdated?.Invoke(0);
             _currentSize = 0;
         }
 

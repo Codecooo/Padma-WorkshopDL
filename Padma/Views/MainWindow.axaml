@@ -56,7 +56,7 @@
             <views:HistoryViews DataContext="{Binding HistoryViewModel}" />
         </TabItem>
         <TabItem Margin="0,0,0,240" HeaderTemplate="{StaticResource GamesTemplate}">
-            <views:SupportedGamesViews DataContext="{Binding GamesViewModel}"/>
+            <views:SupportedGamesViews DataContext="{Binding SupportedGamesViewModel}"/>
         </TabItem>
         <TabItem HeaderTemplate="{StaticResource SettingsTemplate}">
             <views:SettingsViews DataContext="{Binding SettingsViewModel}"/>

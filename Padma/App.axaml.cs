@@ -1,73 +1,83 @@
-    using System;
-    using System.Linq;
-    using Avalonia;
-    using Avalonia.Controls.ApplicationLifetimes;
-    using Avalonia.Data.Core.Plugins;
-    using Avalonia.Markup.Xaml;
-    using Microsoft.Extensions.DependencyInjection;
-    using Padma.Models;
-    using Padma.Services;
-    using Padma.ViewModels;
-    using Padma.Views;
+using System;
+using System.Linq;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Data.Core.Plugins;
+using Avalonia.Markup.Xaml;
+using Microsoft.Extensions.DependencyInjection;
+using Padma.Models;
+using Padma.Services;
+using Padma.ViewModels;
+using Padma.Views;
 
-    namespace Padma;
+namespace Padma;
 
-    public class App : Application
+public class App : Application
+{
+    public static IServiceProvider? ServiceProvider { get; private set; }
+
+    public override void Initialize()
     {
-        public static IServiceProvider? ServiceProvider { get; private set; }
+        AvaloniaXamlLoader.Load(this);
+    }
 
-        public override void Initialize()
+    public override void OnFrameworkInitializationCompleted()
+    {
+        try
         {
-            AvaloniaXamlLoader.Load(this);
-        }
+            var services = new ServiceCollection();
+            ConfigureServices(services);
+            ServiceProvider = services.BuildServiceProvider();
 
-        public override void OnFrameworkInitializationCompleted()
-        {
-            try
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                var collection = new ServiceCollection();
-                AddCommonServices(collection);
-
-                // Build the service provider
-                ServiceProvider = collection.BuildServiceProvider();
-
-                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                {
-                    DisableAvaloniaDataAnnotationValidation();
-                    desktop.MainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-                }
-
-                base.OnFrameworkInitializationCompleted();
+                DisableAvaloniaDataAnnotationValidation();
+                
+                // Create a single instance of MainWindow
+                var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+                desktop.MainWindow = mainWindow;
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+
+            base.OnFrameworkInitializationCompleted();
         }
-
-        private static void AddCommonServices (IServiceCollection collection)
+        catch (Exception e)
         {
-            // Register services with DI container
-            collection.AddTransient<MainWindow>(); // Transient for the UI window
-            collection.AddSingleton<SupportedGames>(); // Singleton for database access
-            collection.AddSingleton<SaveHistory>(); // Singleton for database access
-            collection.AddSingleton<HomeViewModel>(); // Singleton for ViewModel
-            collection.AddSingleton<SupportedGamesViewModel>(); // Singleton for ViewModel
-            collection.AddSingleton<AppIdFinder>(); // Singleton for ViewModel
-            collection.AddSingleton<CmdRunner>(); // Singleton for ViewModel
-            collection.AddSingleton<ThumbnailLoader>(); // Singleton for ViewModel
-            collection.AddSingleton<HistoryViewModel>(); // Singleton for ViewModel
-            collection.AddSingleton<MainWindowViewModel>(); // Singleton for ViewModel
-            collection.AddSingleton<SettingsViewModel>(); // Singleton for ViewModel
-            collection.AddSingleton<DownloadProgressTracker>(); // Singleton for ViewModel
-        }
-
-        private void DisableAvaloniaDataAnnotationValidation()
-        {
-            var dataValidationPluginsToRemove =
-                BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
-
-            foreach (var plugin in dataValidationPluginsToRemove) BindingPlugins.DataValidators.Remove(plugin);
+            Console.WriteLine($"Initialization error: {e}");
+            throw;
         }
     }
+
+    private static void ConfigureServices(IServiceCollection services)
+    {
+        // Register core services
+        services.AddSingleton<DownloadProgressTracker>();
+        services.AddSingleton<SupportedGames>();
+        services.AddSingleton<SaveHistory>();
+        services.AddSingleton<CmdRunner>();
+        services.AddSingleton<ThumbnailLoader>();
+    
+        // Register AppIdFinder after DownloadProgressTracker
+        services.AddSingleton<AppIdFinder>();
+
+        // Register ViewModels after services
+        services.AddSingleton<SupportedGamesViewModel>();
+        services.AddSingleton<HistoryViewModel>();
+        services.AddSingleton<HomeViewModel>();
+        services.AddSingleton<SettingsViewModel>();
+    
+        // Register MainWindowViewModel last
+        services.AddSingleton<MainWindowViewModel>();
+        services.AddSingleton<MainWindow>();
+    }
+
+    private void DisableAvaloniaDataAnnotationValidation()
+    {
+        var dataValidationPluginsToRemove =
+            BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
+
+        foreach (var plugin in dataValidationPluginsToRemove)
+        {
+            BindingPlugins.DataValidators.Remove(plugin);
+        }
+    }
+}

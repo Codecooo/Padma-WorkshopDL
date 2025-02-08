@@ -4,26 +4,26 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Padma.Services;
 
 public class AppIdFinder
 {
     private readonly DownloadProgressTracker _downloadProgressTracker;
-    public string AppId;
-    public string WorkshopId = string.Empty;
-    public string ModTitle;
-    public string ThumbnailUrl;
+    public string AppId { get; private set; }
+    public string WorkshopId { get; private set; } = string.Empty;
+    public string ModTitle { get; private set; }
+    public string ThumbnailUrl { get; private set; }
     private double _fileSize;
-    public long FileSizeBytes;
-    public string FileSizeInfo;
+    public long FileSizeBytes { get; private set; }
+    public string FileSizeInfo { get; private set; }
     public event Func<string, Task>? LogAsync;
 
-    public AppIdFinder()
+    // Proper constructor injection
+    public AppIdFinder(DownloadProgressTracker downloadProgressTracker)
     {
-        _downloadProgressTracker = App.ServiceProvider.GetRequiredService<DownloadProgressTracker>();
-    }
+        _downloadProgressTracker = downloadProgressTracker;
+    }   
     
     public async Task ExtractWorkshopId(string workshopUrl)
     {

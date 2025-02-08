@@ -1,17 +1,22 @@
-﻿namespace Padma.ViewModels;
+﻿
+namespace Padma.ViewModels;
 
-public class MainWindowViewModel
+public class MainWindowViewModel : ViewModelBase
 {
-    public SupportedGamesViewModel GamesViewModel { get; }
-    public HistoryViewModel HistoryViewModel { get; }
-    public HomeViewModel HomeViewModel { get; }
-    public SettingsViewModel SettingsViewModel { get; }
-
-    public MainWindowViewModel(SupportedGamesViewModel gamesViewModel, HistoryViewModel historyViewModel, HomeViewModel homeViewModel, SettingsViewModel settingsViewModel)
+    public MainWindowViewModel(
+        SupportedGamesViewModel supportedGamesViewModel,
+        HistoryViewModel historyViewModel,
+        HomeViewModel homeViewModel,
+        SettingsViewModel settingsViewModel)
     {
-        GamesViewModel = gamesViewModel;
+        SupportedGamesViewModel = supportedGamesViewModel;
         HistoryViewModel = historyViewModel;
         HomeViewModel = homeViewModel;
         SettingsViewModel = settingsViewModel;
     }
+
+    public SupportedGamesViewModel SupportedGamesViewModel { get; }
+    public HistoryViewModel HistoryViewModel { get; }
+    public HomeViewModel HomeViewModel { get; }
+    public SettingsViewModel SettingsViewModel { get; }
 }

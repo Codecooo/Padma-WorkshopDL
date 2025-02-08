@@ -18,12 +18,20 @@ public partial class HomeViews : UserControl
     public HomeViews()
     {
         InitializeComponent();
-        AutoScrollLogs();
+        DataContext = App.ServiceProvider!.GetRequiredService<HomeViewModel>();
+        
         _history = App.ServiceProvider.GetRequiredService<SaveHistory>();
-        _homeViewModel = App.ServiceProvider.GetRequiredService<HomeViewModel>();
+        _homeViewModel = (HomeViewModel)DataContext;
         _runner = App.ServiceProvider.GetRequiredService<CmdRunner>();
         _appIdFinder = App.ServiceProvider.GetRequiredService<AppIdFinder>();
         _findThumbnailLoader = App.ServiceProvider.GetRequiredService<ThumbnailLoader>();
+
+        SetupEventHandlers();
+        AutoScrollLogs();
+    }
+    
+    private void SetupEventHandlers()
+    {
         _runner.LogAsync += UiLogAsync;
         _homeViewModel.LogAsync += UiLogAsync;
         _appIdFinder.LogAsync += UiLogAsync;
