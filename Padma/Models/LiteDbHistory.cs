@@ -24,14 +24,10 @@ public class SaveHistory : ReactiveObject, IDisposable
 {
     private readonly LiteDatabase _db;
     public bool HistoryEnabled = true;
-    private string _downloadStatusChanged = string.Empty;    
     public Subject<Unit> HistoryChangedSignal { get; } = new Subject<Unit>();
     public SaveHistory()
     {
         _db = new LiteDatabase("/home/lagita/RiderProjects/Padma/Padma/LiteDB/history.db");
-        
-        this.WhenAnyValue(x => x.DownloadStatusChange)
-            .Subscribe(_ => DownloadStatusChanged());
     }
 
     public ILiteCollection<LiteDbHistory> History => _db.GetCollection<LiteDbHistory>("history");
@@ -52,7 +48,6 @@ public class SaveHistory : ReactiveObject, IDisposable
             WorkshopTitle = workshopTitle,
             WorkshopUrl = workshopUrl,
             DownloadLocation = downloadLocation,
-            DownloadStatus = DownloadStatusChange,
             DownloadSize = downloadSize
         };
         History.Insert(historyEntry);
@@ -74,21 +69,5 @@ public class SaveHistory : ReactiveObject, IDisposable
     {
         History.DeleteAll();
         HistoryChangedSignal.OnNext(Unit.Default);
-    }
-
-    private void DownloadStatusChanged()
-    {
-        if (!string.IsNullOrEmpty(_downloadStatusChanged))
-        {
-            var history = History.FindById(History.Max(x => x.Id));
-            history.DownloadStatus = _downloadStatusChanged;
-            History.Update(history);
-        }
-    }
-
-    public string DownloadStatusChange
-    {
-        get => _downloadStatusChanged;
-        set => this.RaiseAndSetIfChanged(ref _downloadStatusChanged, value);
     }
 }

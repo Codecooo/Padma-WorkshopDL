@@ -29,7 +29,7 @@
                             <Border Height="83" Background="{DynamicResource ItemsDarkBrush}" Padding="10" Margin="5">
                                 <Grid RowDefinitions="Auto, Auto, Auto">
                                     <TextBlock Grid.Row="0" FontSize="13" Foreground="Wheat" Text="{Binding WorkshopTitle}"/>
-                                    <Button ZIndex="1" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Right">
+                                    <Button Command="{Binding $parent[ItemsControl].((vm:HistoryViewModel)DataContext).OpenDownloadCommand}" ZIndex="1" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Right">
                                         <Svg Path="/Assets/folder.svg" Width="20" Height="20"/>
                                     </Button>
                                     <TextBox Grid.Row="1" FontSize="12" Classes="HistoryUrl" IsReadOnly="True" Foreground="Wheat" Text="{Binding WorkshopUrl}"/>

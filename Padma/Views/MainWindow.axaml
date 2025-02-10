@@ -6,7 +6,7 @@
         mc:Ignorable="d"
         d:DesignWidth="900"
         d:DesignHeight="450"
-        Height="500"
+        Height="510"
         Width="900"
         CanResize="False"
         xmlns:views="clr-namespace:Padma.Views"
@@ -17,50 +17,56 @@
         x:DataType="viewModels:MainWindowViewModel">
     <!-- Sidebar Menu -->
     <TabControl TabStripPlacement="Left">
-        <TabControl.ItemsPanel>
-            <ItemsPanelTemplate>
-                <WrapPanel Background="{StaticResource LessDarkNavigation}" Width="40" />
-            </ItemsPanelTemplate>
-        </TabControl.ItemsPanel>
-        <TabControl.Resources>
-            <DataTemplate x:Key="HomeTemplate">
-                <StackPanel Orientation="Vertical">
-                    <Svg Path="/Assets/home.svg" Width="26" />
-                    <TextBlock FontSize="10" Text="Games" Foreground="Wheat" IsVisible="False" />
-                </StackPanel>
-            </DataTemplate>
-            <DataTemplate x:Key="HistoryTemplate">
-                <StackPanel Orientation="Vertical">
-                    <Image Source="/Assets/history.png" Width="26" />
-                    <TextBlock FontSize="10" Text="Games" Foreground="Wheat" IsVisible="False" />
-                </StackPanel>
-            </DataTemplate>
-            <DataTemplate x:Key="GamesTemplate">
-                <StackPanel Orientation="Vertical">
-                    <Image Source="/Assets/games.png" Width="26" />
-                    <TextBlock FontSize="10" Text="Games" Foreground="Wheat" IsVisible="False" />
-                </StackPanel>
-            </DataTemplate>
-            <DataTemplate x:Key="SettingsTemplate">
-                <StackPanel Orientation="Vertical">
-                    <Svg Path="/Assets/settings.svg" Width="26" />
-                    <TextBlock Name="SettingsHover" FontSize="10" Text="Settings" TextAlignment="Center"
-                               Foreground="Wheat" IsVisible="False" />
-                </StackPanel>
-            </DataTemplate>
-        </TabControl.Resources>
-        <TabItem Margin="0,0,0,5" HeaderTemplate="{StaticResource HomeTemplate}">
-            <views:HomeViews DataContext="{Binding HomeViewModel}" />
-        </TabItem>
-        <TabItem Margin="0,0,0,5" HeaderTemplate="{StaticResource HistoryTemplate}">
-            <views:HistoryViews DataContext="{Binding HistoryViewModel}" />
-        </TabItem>
-        <TabItem Margin="0,0,0,240" HeaderTemplate="{StaticResource GamesTemplate}">
-            <views:SupportedGamesViews DataContext="{Binding SupportedGamesViewModel}"/>
-        </TabItem>
-        <TabItem HeaderTemplate="{StaticResource SettingsTemplate}">
-            <views:SettingsViews DataContext="{Binding SettingsViewModel}"/>
-        </TabItem>
+      <!-- Use a DockPanel to arrange headers -->
+      <TabControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <DockPanel LastChildFill="False" Width="40" />
+        </ItemsPanelTemplate>
+      </TabControl.ItemsPanel>
+      <TabControl.Resources>
+        
+        <!-- Header templates -->
+        <DataTemplate x:Key="HomeTemplate">
+          <StackPanel Orientation="Vertical" Margin="5">
+            <Svg Path="/Assets/home.svg" Width="26" />
+            <TextBlock FontSize="10" Text="Home" Foreground="Wheat" IsVisible="False" />
+          </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="HistoryTemplate">
+          <StackPanel Orientation="Vertical" Margin="5">
+            <Image Source="/Assets/history.png" Width="26" />
+            <TextBlock FontSize="10" Text="History" Foreground="Wheat" IsVisible="False" />
+          </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="GamesTemplate">
+          <StackPanel Orientation="Vertical" Margin="5">
+            <Image Source="/Assets/games.png" Width="26" />
+            <TextBlock FontSize="10" Text="Games" Foreground="Wheat" IsVisible="False" />
+          </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="SettingsTemplate">
+          <StackPanel Orientation="Vertical" Margin="5">
+            <Svg Path="/Assets/settings.svg" Width="26" />
+            <TextBlock FontSize="10" Text="Settings" Foreground="Wheat" IsVisible="False" />
+          </StackPanel>
+        </DataTemplate>
+      </TabControl.Resources>
+
+      <!-- Top TabItems -->
+      <TabItem HeaderTemplate="{StaticResource HomeTemplate}" DockPanel.Dock="Top">
+        <views:HomeViews DataContext="{Binding HomeViewModel}" />
+      </TabItem>
+      <TabItem HeaderTemplate="{StaticResource HistoryTemplate}" DockPanel.Dock="Top">
+        <views:HistoryViews DataContext="{Binding HistoryViewModel}" />
+      </TabItem>
+      <TabItem HeaderTemplate="{StaticResource GamesTemplate}" DockPanel.Dock="Top">
+        <views:SupportedGamesViews DataContext="{Binding SupportedGamesViewModel}" />
+      </TabItem>
+
+      <!-- Bottom TabItem -->
+      <TabItem HeaderTemplate="{StaticResource SettingsTemplate}" DockPanel.Dock="Bottom">
+        <views:SettingsViews DataContext="{Binding SettingsViewModel}" />
+      </TabItem>
     </TabControl>
     <Design.DataContext>
         <vm:MainWindowViewModel />

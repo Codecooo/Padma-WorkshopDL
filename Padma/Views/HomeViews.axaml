@@ -3,14 +3,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Padma.ViewModels;assembly=Padma"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="490"
              x:DataType="vm:HomeViewModel"
              x:Class="Padma.Views.HomeViews">
     <!-- Main Area -->
     <Grid Background="{DynamicResource MainDarkBrush}" ColumnDefinitions="*, Auto">
-            <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, *">
-            <Label Grid.Row="0" Foreground="White" Content="Padma" FontSize="33" VerticalAlignment="Top"
-                   HorizontalAlignment="Center" Margin="10" />
+        <Grid Grid.Column="0" RowDefinitions="Auto, *">
             <ToggleButton PointerEntered="HideConsole_Hovered"
                           PointerExited="HideConsole_NotHovered"
                           Grid.Row="0"
@@ -26,54 +24,47 @@
                                IsVisible="False" />
                 </StackPanel>
             </ToggleButton>
-            <Image Grid.Row="1" Name="Thumbnail" Source="{Binding ModsThumbnail}" Width="240" Height="125" />
-            <Label Grid.Row="2"
-                   Name="Titlw"
-                   Foreground="White"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   Margin="0,5,0,0"
-                   Content="{Binding WorkshopTitle}"
-                   FontSize="17" />
-            <Label Grid.Row="3" Foreground="White" Content="Mod ID" HorizontalAlignment="Center" Margin="0,5,140,5" />
-            <Label Grid.Row="3" Foreground="White" Content="App ID" HorizontalAlignment="Center" Margin="140,5,0,5" />
-            <TextBox Foreground="Black" Name="ModId" Text="{Binding WorkshopId}" FontSize="11" TextAlignment="Center" Background="White"
-                     Padding="8" Grid.Row="4" Width="85" Height="30" Margin="0,0,140,5" />
-            <TextBox Foreground="Black" Name="Appid" Text="{Binding AppId}" FontSize="11" TextAlignment="Center" Background="White"
-                     Padding="8" Grid.Row="4" Width="85" Height="30" Margin="140,0,0,5" />
-            <TextBox Watermark="Enter Steam Workshop Url" Text="{Binding WorkshopUrl}"
-                     Grid.Row="5" Width="254" Height="20" Margin="10" />
-            <TextBlock HorizontalAlignment="Center" Margin="0,0,0,6" Name="FileSizeInfo" Foreground="White" Grid.Row="6" IsVisible="False"/>
-            <Button Name="DownloaderControlButton" Command="{Binding DownloadButton_OnClickCommand}" IsEnabled="{Binding IsEnabled}" Classes="Small" Grid.Row="7"
-                    Height="40" HorizontalAlignment="Center" Width="120" Background="#1434A4">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <Svg Path="/Assets/cloud_download.svg" Margin="0,0,5,0" />
-                    <TextBlock Text="Download" VerticalAlignment="Center" Foreground="White" />
-                </StackPanel>
-            </Button>
-            <ItemsControl VerticalAlignment="Bottom" Grid.Row="8" ItemsSource="{Binding HistoryList}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel VerticalAlignment="Bottom" Orientation="Vertical"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Classes="DownloadStatus" Background="{DynamicResource MidnightBlueBrush}" CornerRadius="5" >
-                            <StackPanel Spacing="2">
-                                <TextBlock FontSize="11" Margin="5,5,0,0" Foreground="White" Text="{Binding WorkshopTitle}"/>
-                                <ProgressBar Foreground="#478778" Value="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).DownloadProgress}"
-                                             ShowProgressText="True" Minimum="0" Maximum="100"/>
-                                <Button Command="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).CancelDownloadOnCommand}" 
-                                        Content="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).ButtonContent}" IsEnabled="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).IsEnabled}" 
-                                        FontSize="10" Foreground="IndianRed" Classes="ConfirmButton"  Margin="0,0,5,0"  HorizontalAlignment="Right"/>
-                                <TextBlock FontSize="11" Margin="5,0,0,5" VerticalAlignment="Bottom" Foreground="White"
-                                           Text="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).DownloadStatusNow}"/>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <DockPanel VerticalAlignment="Stretch" LastChildFill="False" Grid.Row="1">
+                    <StackPanel DockPanel.Dock="Top">
+                          <Grid VerticalAlignment="Center" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, *">
+                         <Image Grid.Row="1" Name="Thumbnail" Source="{Binding ModsThumbnail, FallbackValue=/Assets/edit-me.png}" Width="240" Height="125" />
+                <Label Grid.Row="2" Foreground="White"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Margin="0,5,0,0"
+                       Content="{Binding WorkshopTitle}"
+                       FontSize="17" />
+                <Label Grid.Row="3" Foreground="White" Content="Mod ID" HorizontalAlignment="Center" Margin="0,5,140,5" />
+                <Label Grid.Row="3" Foreground="White" Content="App ID" HorizontalAlignment="Center" Margin="140,5,0,5" />
+                <TextBox Foreground="Black" Name="ModId" Text="{Binding WorkshopId}" FontSize="11" TextAlignment="Center" Background="White"
+                         Padding="8" Grid.Row="4" Width="85" Height="30" Margin="0,0,140,5" />
+                <TextBox Foreground="Black" Name="Appid" Text="{Binding AppId}" FontSize="11" TextAlignment="Center" Background="White"
+                         Padding="8" Grid.Row="4" Width="85" Height="30" Margin="140,0,0,5" />
+                <TextBox Watermark="Enter Steam Workshop Url" Text="{Binding WorkshopUrl}"
+                         Grid.Row="5" Width="254" Height="20" Margin="10" />
+                <TextBlock HorizontalAlignment="Center" Margin="0,0,0,6" Text="{Binding FileSizeInfo}" Foreground="White" Grid.Row="6" IsVisible="{Binding IsVisible}"/>
+                <Button Name="DownloaderControlButton" Command="{Binding DownloadButton_OnClickCommand}" IsEnabled="{Binding IsEnabled}" Classes="Small" Grid.Row="7"
+                        Height="40" HorizontalAlignment="Center" Width="120" Background="#1434A4">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Svg Path="/Assets/cloud_download.svg" Margin="0,0,5,0" />
+                        <TextBlock Text="Download" VerticalAlignment="Center" Foreground="White" />
+                    </StackPanel>
+                </Button>
+                          </Grid>
+                    </StackPanel>
+                <Border IsVisible="{Binding DownloadStarted}" DockPanel.Dock="Bottom" Classes="DownloadStatus" Background="{DynamicResource MidnightBlueBrush}" CornerRadius="5" >
+                    <StackPanel Spacing="2">
+                        <TextBlock FontSize="11" Margin="5,5,0,0" Foreground="White" Text="{Binding WorkshopTitle}"/>
+                        <ProgressBar Foreground="#478778" Value="{Binding DownloadProgress}"
+                                     ShowProgressText="True" Minimum="0" Maximum="100"/>
+                        <Button Command="{Binding CancelAndOpenCommand}" 
+                                Content="{Binding ButtonContent}" IsEnabled="{Binding CancelEnabled}" 
+                                FontSize="10" Foreground="IndianRed" Classes="ConfirmButton" Margin="0,0,5,0"  HorizontalAlignment="Right"/>
+                        <TextBlock FontSize="11" Margin="5,0,0,5" VerticalAlignment="Bottom" Foreground="White"
+                                   Text="{Binding DownloadStatusNow}"/>
+                    </StackPanel>
+                </Border>
+            </DockPanel>
         </Grid>
         <!-- Console Log Window -->
         <Grid Name="ConsoleLogWindow" Grid.Column="1" Background="#161C1E" Width="310">

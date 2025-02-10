@@ -55,6 +55,7 @@ public class App : Application
         services.AddSingleton<SaveHistory>();
         services.AddSingleton<CmdRunner>();
         services.AddSingleton<ThumbnailLoader>();
+        services.AddSingleton<FolderPicker>();
     
         // Register AppIdFinder after DownloadProgressTracker
         services.AddSingleton<AppIdFinder>();
@@ -67,7 +68,7 @@ public class App : Application
     
         // Register MainWindowViewModel last
         services.AddSingleton<MainWindowViewModel>();
-        services.AddSingleton<MainWindow>();
+        services.AddTransient<MainWindow>();
     }
 
     private void DisableAvaloniaDataAnnotationValidation()

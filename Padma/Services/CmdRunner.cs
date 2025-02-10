@@ -8,16 +8,23 @@ namespace Padma.Services;
 
 public class CmdRunner
 {
+    private readonly FolderPicker _folderPicker;
     public bool Success;
     public string SteamCmdDirPath = string.Empty;
     public string SteamCmdFilePath = string.Empty;
     public string DownloadPath = string.Empty;
     public event Func<string, Task>? LogAsync;
 
+    public CmdRunner(FolderPicker folderPicker)
+    {
+        _folderPicker = folderPicker;
+    }
+
     public async Task RunSteamCmd(string workshopId, string appId)
     { 
         SteamCmdDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Padma", "SteamCMD");   
         SteamCmdFilePath = Path.Combine(SteamCmdDirPath, "steamcmd.sh");
+        DownloadPath = _folderPicker.SelectedPath;
         try
         {
             if (!Directory.Exists(SteamCmdDirPath))

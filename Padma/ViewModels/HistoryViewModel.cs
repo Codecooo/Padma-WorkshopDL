@@ -1,22 +1,26 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using CommunityToolkit.Mvvm.Input;
 using Padma.Models;
 using ReactiveUI;
 
 namespace Padma.ViewModels;
 
-public class HistoryViewModel : ReactiveObject
+public partial class HistoryViewModel : ReactiveObject
 {
     private readonly SaveHistory _history;
+    private readonly HomeViewModel _homeViewModel;
     private ObservableCollection<LiteDbHistory> _historyList = new();
     private ObservableCollection<LiteDbHistory> _filteredHistory = new();
     private bool _dontHaveHistory;
     private string? _searchText;
     
-    public HistoryViewModel(SaveHistory db)
+    public HistoryViewModel(SaveHistory db, HomeViewModel homeViewModel)
     {
         _history = db;
+        _homeViewModel = homeViewModel;
         LoadHistory();
 
         // React to changes in SearchText user enters
@@ -35,37 +39,29 @@ public class HistoryViewModel : ReactiveObject
             .Subscribe(_ => LoadHistory());
     }
     
-    /// <summary>
-    /// Automatically notifies UI with set of download history in history.db set _historyList the value
-    /// </summary>
     public ObservableCollection<LiteDbHistory> HistoryList
     {
         get => _historyList;
         set => this.RaiseAndSetIfChanged(ref _historyList, value);
     }
     
-    /// <summary>
-    /// Automatically notifies UI with set of download history in history.db set _filteredHistory the value
-    /// This will be used when user search things 
-    /// </summary>
+    [RelayCommand]
+    public void OpenDownload() => Process.Start("xdg-open", _homeViewModel.DownloadedPath);
+
     public ObservableCollection<LiteDbHistory> FilteredHistory
     {
         get => _filteredHistory;
         set => this.RaiseAndSetIfChanged(ref _filteredHistory, value);
     }
     
-    /// <summary>
-    /// Get the value user enter in the search and then notify the UI
-    /// </summary>
+
     public string? SearchText
     {
         get => _searchText;
         set => this.RaiseAndSetIfChanged(ref _searchText, value);
     }
     
-    /// <summary>
-    /// Load the history lists from history.db
-    /// </summary>
+
     private void LoadHistory()
     {
         var allhistory = _history.GetAllHistoryList().ToList();
@@ -96,9 +92,6 @@ public class HistoryViewModel : ReactiveObject
         }
     }
     
-    /// <summary>
-    /// Set the visibility of placeholder textblock Nothing to show here based if it has download history or not
-    /// </summary>
     public bool NoHistory
     {
         get => _dontHaveHistory;

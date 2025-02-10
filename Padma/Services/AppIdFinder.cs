@@ -91,7 +91,7 @@ public class AppIdFinder
                         else if (Math.Floor(_fileSize) < 1)
                         {
                             FileSizeBytes /= 1024;
-                            FileSizeInfo = $"{_fileSize:F1} KB";
+                            FileSizeInfo = $"{FileSizeBytes:F1} KB";
                         }
                         else
                         {

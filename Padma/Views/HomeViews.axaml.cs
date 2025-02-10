@@ -18,16 +18,55 @@ public partial class HomeViews : UserControl
     public HomeViews()
     {
         InitializeComponent();
-        DataContext = App.ServiceProvider!.GetRequiredService<HomeViewModel>();
-        
-        _history = App.ServiceProvider.GetRequiredService<SaveHistory>();
-        _homeViewModel = (HomeViewModel)DataContext;
+
+        _history = App.ServiceProvider!.GetRequiredService<SaveHistory>();
         _runner = App.ServiceProvider.GetRequiredService<CmdRunner>();
         _appIdFinder = App.ServiceProvider.GetRequiredService<AppIdFinder>();
         _findThumbnailLoader = App.ServiceProvider.GetRequiredService<ThumbnailLoader>();
 
+        // Get the ViewModel but don't set DataContext yet
+        _homeViewModel = App.ServiceProvider.GetRequiredService<HomeViewModel>();
+        
         SetupEventHandlers();
         AutoScrollLogs();
+    }
+
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+        
+        Console.WriteLine($"OnDataContextChanged called, current DataContext type: {DataContext?.GetType().Name}");
+        
+        // If DataContext is null or not our ViewModel, set it
+        if (DataContext is not HomeViewModel)
+        {
+            Console.WriteLine("Setting DataContext to HomeViewModel");
+            DataContext = _homeViewModel;
+        }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        
+        Console.WriteLine($"OnAttachedToVisualTree - Before check, DataContext type: {DataContext?.GetType().Name}");
+        
+        // Double check DataContext here too
+        if (DataContext is not HomeViewModel && _homeViewModel != null)
+        {
+            Console.WriteLine("Resetting DataContext in OnAttachedToVisualTree");
+            DataContext = _homeViewModel;
+        }
+
+        if (DataContext is HomeViewModel vm)
+        {
+            Console.WriteLine($"OnAttachedToVisualTree - WorkshopTitle: {vm.WorkshopTitle}");
+            Console.WriteLine($"OnAttachedToVisualTree - IsEnabled: {vm.IsEnabled}");
+        }
+        else
+        {
+            Console.WriteLine("OnAttachedToVisualTree - DataContext is not HomeViewModel");
+        }
     }
     
     private void SetupEventHandlers()

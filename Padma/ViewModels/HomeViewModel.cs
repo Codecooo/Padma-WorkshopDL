@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using ReactiveUI;
 using Padma.Models;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Threading;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.Input;
@@ -20,16 +21,21 @@ namespace Padma.ViewModels
         private readonly AppIdFinder _appIdFinder;
         private readonly CmdRunner _runner;
         private readonly SaveHistory _history;
+        private readonly FolderPicker _folderPicker;
         private readonly ThumbnailLoader _thumbnailLoader;
-        private readonly CancellationTokenSource _cts = new();
+        private CancellationTokenSource _cts = new();
         private string _workshopId;
         private string _appId;
+        public string DownloadedPath;
         private string _buttonContent = "Cancel";
-        private bool _isEnabled;
+        private string _workshopTitle = "Created by Codecoo";
+        private bool _isEnabled = true;
+        private bool _cancelEnabled = true;
+        private bool _downloadStarted;
         private Bitmap _modsThumbnail;
         private string? _workshopUrl;
-        private string _workshopTitle;
-        private string _thumbnailUrl;
+        private string _fileSizeInfo;
+        private bool _isVisible;
         private string _downloadStatus;
         private int _downloadProgress;
         private ObservableCollection<LiteDbHistory> _historyList = new();
@@ -43,21 +49,23 @@ namespace Padma.ViewModels
             AppIdFinder appIdFinder,
             CmdRunner runner,
             ThumbnailLoader thumbnailLoader,
-            DownloadProgressTracker downloadTracker)
+            DownloadProgressTracker downloadTracker,
+            FolderPicker folderPicker)
         {
             _history = history;
+            _folderPicker = folderPicker;
             _appIdFinder = appIdFinder;
             _runner = runner;
             _thumbnailLoader = thumbnailLoader;
             _downloadTracker = downloadTracker;
-            WorkshopTitle = "Created by Codecoo";
-            IsEnabled = true;
-            ModsThumbnail =  LoadModsThumbnail("");
 
             // Subscribe to progress updates
             _downloadTracker.ProgressUpdated += progress => DownloadProgress = progress;
+            
+            _history.HistoryChangedSignal
+                .Subscribe(_ => LoadRecentHistory());
 
-            _history.WhenAnyValue(h => h.DownloadStatusChange)
+            this.WhenAnyValue(x => x.DownloadStatusNow)
                 .Subscribe(_ => AutoClearDownloadBar());
 
             this.WhenAnyValue(vm => vm.WorkshopUrl)
@@ -69,8 +77,13 @@ namespace Padma.ViewModels
                     _ => { /* Optionally handle success */ },
                     ex => LogAsync?.Invoke($"Error during extraction: {ex.Message}")
                 );
+            
+            InitializeThumbnails();
+        }
 
-            Console.WriteLine($"The value for title is {WorkshopTitle}");
+        private async void InitializeThumbnails()
+        {
+            await LoadModsThumbnail("https://i.imgur.com/mJMNIz5.png");
         }
         
         private async Task AppIdFinder() 
@@ -79,15 +92,14 @@ namespace Padma.ViewModels
             await _appIdFinder.AppFinder();
             AppId = _appIdFinder.AppId;
             WorkshopTitle = _appIdFinder.ModTitle;
-            ModsThumbnail = LoadModsThumbnail(_appIdFinder.ThumbnailUrl);
         }
 
-        private Bitmap LoadModsThumbnail(string url)
+        private async Task LoadModsThumbnail(string url)
         {
-            _thumbnailLoader.LoadThumbnail(url);
-            return _thumbnailLoader.Thumbnail;
+            await _thumbnailLoader.LoadThumbnail(url);
+            ModsThumbnail = _thumbnailLoader.Thumbnail;
         }
-
+        
         private async Task SaveHistory()
         {
             if (!string.IsNullOrEmpty(_workshopUrl) &&
@@ -95,8 +107,8 @@ namespace Padma.ViewModels
                 await _history.SaveHistoryAsync(
                     WorkshopTitle,
                     _workshopUrl,
-                    _runner.DownloadPath,
-                    _appIdFinder.FileSizeInfo); // Replace with actual path
+                    DownloadedPath,
+                    _appIdFinder.FileSizeInfo); 
         }
 
         private async Task ExtractAppIdAndThumbnail()
@@ -106,50 +118,62 @@ namespace Padma.ViewModels
                 if (string.IsNullOrEmpty(WorkshopUrl)) return;
                 // Fetch App ID properly
                 await AppIdFinder(); // This is now awaited correctly
+                var bitmap = await _thumbnailLoader.LoadThumbnail(_appIdFinder.ThumbnailUrl);
+                ModsThumbnail = bitmap;
                 AppId = _appIdFinder.AppId;
                 WorkshopId = _appIdFinder.WorkshopId;
-                var bitmap = await _thumbnailLoader.LoadThumbnail(_thumbnailUrl);
-                ModsThumbnail = bitmap;
+                FileSizeInfo = _appIdFinder.FileSizeInfo;
+                IsVisible = true;
             }
             catch (Exception ex)
             {
                 await LogAsync($"Error: {ex.Message}");
             }
         }
-        
+
         [RelayCommand]
         private async Task DownloadButton_OnClick()
         {
             try
             {
                 IsEnabled = false;
-                if (_history.HistoryEnabled)
-                    await SaveHistory();
+                _downloadTracker.DownloadFolder = _folderPicker.SelectedPath;
                 _appIdFinder.SetValuesOfProgressTracker();
-                _history.DownloadStatusChange = "Downloading";
-                _runner.DownloadPath = "/home/lagita/Downloads";
+                DownloadStatusNow = "Downloading"; 
+                DownloadStarted = true;
+                ButtonContent = "Cancel";
                 await _runner.RunSteamCmd(_workshopId, _appId);
             }
             finally
             {
-                _history.DownloadStatusChange = _runner.Success ? "Finished" : "Failed";
+                DownloadStatusNow = _runner.Success ? "Finished" : "Failed";
+                if (_history.HistoryEnabled && _runner.Success)
+                    await SaveHistory();
                 await LogAsync("All processes finished.");
                 IsEnabled = true;
+                ButtonContent = "Open";
             }
         }
         
         [RelayCommand]
-        private void CancelDownloadOn()
+        private async Task CancelAndOpen()
         {
-            try
+            if (DownloadStatusNow is "Finished")
             {
-                IsEnabled = false;
-                _ = _runner.KillSteamCmd();
+                DownloadedPath = Path.Combine(_folderPicker.FolderPathView, AppId, WorkshopId);
+                await _folderPicker.OpenFolder(DownloadedPath);                
             }
-            finally
+            else
             {
-                ButtonContent = "Canceled";
-                IsEnabled = true;
+                try
+                {
+                    CancelEnabled = false;
+                    _ = _runner.KillSteamCmd();
+                }
+                finally
+                {
+                    ButtonContent = "Canceled";
+                }
             }
         }
         
@@ -159,6 +183,30 @@ namespace Padma.ViewModels
         {
             get => _downloadProgress;
             set => this.RaiseAndSetIfChanged(ref _downloadProgress, value);
+        }
+
+        public bool CancelEnabled
+        {
+            get => _cancelEnabled;
+            set => this.RaiseAndSetIfChanged(ref _cancelEnabled, value);
+        }
+
+        public bool DownloadStarted
+        {
+            get => _downloadStarted;
+            set => this.RaiseAndSetIfChanged(ref _downloadStarted, value);
+        }
+        
+        public string FileSizeInfo
+        {
+            get => _fileSizeInfo;
+            set => this.RaiseAndSetIfChanged(ref _fileSizeInfo, value);
+        }
+
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set => this.RaiseAndSetIfChanged(ref _isVisible, value);
         }
         
         public string WorkshopUrl
@@ -209,13 +257,14 @@ namespace Padma.ViewModels
             set => this.RaiseAndSetIfChanged(ref _downloadStatus, value);
         }
         
-        #endregion
-        
         public ObservableCollection<LiteDbHistory> HistoryList
         {
             get => _historyList;
             set => this.RaiseAndSetIfChanged(ref _historyList, value);
         }
+        
+        #endregion
+        
         
         // Reload recent history from the model.
         private void LoadRecentHistory()
@@ -228,11 +277,23 @@ namespace Padma.ViewModels
         // Update the download status in the view model.
         public void AutoClearDownloadBar()
         {
-            DownloadStatusNow = _history.DownloadStatusChange;
             if (DownloadStatusNow is "Finished" or "Failed")
             {
+                _cts.Dispose();
+                _cts = new CancellationTokenSource();
+                _downloadTracker.DownloadWatcher?.Dispose();
+                _downloadTracker.FolderWatcher?.Dispose();
+                _downloadTracker.ProgressDebounceTimer?.Dispose();
+                DownloadProgress = 0;
+                _downloadTracker.CurrentSize = 0;
                 Task.Delay(TimeSpan.FromMinutes(1.6), _cts.Token)
-                    .ContinueWith(_ => HistoryList.Clear());
+                    .ContinueWith(x =>
+                    {
+                        if (!x.IsCanceled)
+                        {
+                            DownloadStarted = false;
+                        } 
+                    });
             }
         }
     }

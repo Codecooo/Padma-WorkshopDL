@@ -11,13 +11,13 @@ public class DownloadProgressTracker : ReactiveObject
 {
     public event Action<int>? ProgressUpdated;
     public long TotalSize;
-    private FileSystemWatcher? _folderWatcher;
-    private FileSystemWatcher? _downloadWatcher;
-    private long _currentSize;
+    public FileSystemWatcher? FolderWatcher;
+    public FileSystemWatcher? DownloadWatcher;
+    public long CurrentSize;
     // For debouncing progress updates.
-    private Timer? _progressDebounceTimer;
+    public Timer? ProgressDebounceTimer;
     // We'll store the download folder path once the folder is created.
-    private string _downloadFolderPath = string.Empty;
+    public string DownloadFolder;
     
     public DownloadProgressTracker()
     {
@@ -27,9 +27,6 @@ public class DownloadProgressTracker : ReactiveObject
             .Where(valid => valid)
             .Take(1)
             .Subscribe(_ => StartTrackingDownload(AppId, WorkshopId));
-
-        // this.WhenAnyValue(x => x._homeViewModel.DownloadStatusNow)
-        //     .Subscribe(_ => StopTracking());
     }
 
     private string _appId = string.Empty;
@@ -49,45 +46,44 @@ public class DownloadProgressTracker : ReactiveObject
      // This method watches the parent directory for the download folder.
         public void StartTrackingDownload(string appId, string workshopId)
         {
-            // Parent folder path where downloads are stored.
-            string basePath = "/home/lagita/.local/share/Steam/steamapps/workshop/downloads";
+            DownloadFolder = Path.Combine(DownloadFolder, "steamapps", "workshop", "downloads");
 
-            if (!Directory.Exists(basePath))
+            if (!Directory.Exists(DownloadFolder))
             {
                 Console.WriteLine("Base folder does not exist. Waiting for it to be created.");
                 return;
             }
 
-            _folderWatcher = new FileSystemWatcher(basePath)
+            FolderWatcher = new FileSystemWatcher(DownloadFolder)
             {
                 Filter = "*",
                 NotifyFilter = NotifyFilters.DirectoryName,
                 IncludeSubdirectories = true
             };
 
-            _folderWatcher.Created += (s, e) =>
+            FolderWatcher.Created += (s, e) =>
             {
                 var dirInfo = new DirectoryInfo(e.FullPath);
                 // Check if the created folder's name is the workshopId and its parent's name is appId.
                 if (dirInfo.Name.Equals(workshopId, StringComparison.OrdinalIgnoreCase) &&
                     dirInfo.Parent?.Name.Equals(appId, StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    _downloadFolderPath = e.FullPath;
-                    _folderWatcher.EnableRaisingEvents = false; // Stop watching parent folder.
-                    AttachDownloadWatcher(_downloadFolderPath);
+                    DownloadFolder = e.FullPath;
+                    FolderWatcher.EnableRaisingEvents = false; // Stop watching parent folder.
+                    AttachDownloadWatcher(DownloadFolder);
                 }
             };
-            _folderWatcher.EnableRaisingEvents = true;
+            FolderWatcher.EnableRaisingEvents = true;
         }
 
         // Attach a watcher to the newly created download folder.
         private void AttachDownloadWatcher(string folderPath)
         {
             // Initialize current size.
-            _currentSize = Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories)
+            CurrentSize = Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories)
                             .Sum(file => new FileInfo(file).Length);
 
-            _downloadWatcher = new FileSystemWatcher(folderPath)
+            DownloadWatcher = new FileSystemWatcher(folderPath)
             {
                 IncludeSubdirectories = true,
                 NotifyFilter = NotifyFilters.FileName | NotifyFilters.Size | NotifyFilters.LastWrite
@@ -95,22 +91,22 @@ public class DownloadProgressTracker : ReactiveObject
 
             // Instead of immediately recalculating on every event,
             // we reset a debounce timer.
-            _downloadWatcher.Changed += OnDownloadFolderChanged;
-            _downloadWatcher.Created += OnDownloadFolderChanged;
-            _downloadWatcher.Deleted += OnDownloadFolderChanged;
-            _downloadWatcher.Renamed += OnDownloadFolderChanged;
+            DownloadWatcher.Changed += OnDownloadFolderChanged;
+            DownloadWatcher.Created += OnDownloadFolderChanged;
+            DownloadWatcher.Deleted += OnDownloadFolderChanged;
+            DownloadWatcher.Renamed += OnDownloadFolderChanged;
 
-            _downloadWatcher.EnableRaisingEvents = true;
+            DownloadWatcher.EnableRaisingEvents = true;
 
-            // Create debounce timer, set to trigger after 500ms of inactivity.
-            _progressDebounceTimer = new Timer(_ => RecalculateProgress(), null, Timeout.Infinite, Timeout.Infinite);
+            // Create debounce timer, set to trigger after 160ms of inactivity.
+            ProgressDebounceTimer = new Timer(_ => RecalculateProgress(), null, Timeout.Infinite, Timeout.Infinite);
         }
 
         // When a file event occurs, restart the debounce timer.
         private void OnDownloadFolderChanged(object sender, FileSystemEventArgs e)
         {
             // Restart debounce timer for 500ms delay.
-            _progressDebounceTimer?.Change(160, Timeout.Infinite);
+            ProgressDebounceTimer?.Change(160, Timeout.Infinite);
         }
 
         // Recalculate the progress once there have been no file events for 500ms.
@@ -118,12 +114,12 @@ public class DownloadProgressTracker : ReactiveObject
         {
             try
             {
-                if (!string.IsNullOrWhiteSpace(_downloadFolderPath) && Directory.Exists(_downloadFolderPath))
+                if (!string.IsNullOrWhiteSpace(DownloadFolder) && Directory.Exists(DownloadFolder))
                 {
-                    long newSize = Directory.GetFiles(_downloadFolderPath, "*", SearchOption.AllDirectories)
+                    long newSize = Directory.GetFiles(DownloadFolder, "*", SearchOption.AllDirectories)
                         .Sum(file => new FileInfo(file).Length);
-                    _currentSize = newSize;
-                    int downloadPercentage = (int)(Math.Round((double)_currentSize / TotalSize, 2) * 100);
+                    CurrentSize = newSize;
+                    int downloadPercentage = (int)(Math.Round((double)CurrentSize / TotalSize, 2) * 100);
                     ProgressUpdated?.Invoke(downloadPercentage);
                 }
             }
@@ -132,14 +128,4 @@ public class DownloadProgressTracker : ReactiveObject
                 Console.WriteLine($"Error recalculating download progress: {ex.Message}");
             }
         }
-
-        public void StopTracking()
-        {
-            _downloadWatcher?.Dispose();
-            _folderWatcher?.Dispose();
-            _progressDebounceTimer?.Dispose();
-            ProgressUpdated?.Invoke(0);
-            _currentSize = 0;
-        }
-
 }
