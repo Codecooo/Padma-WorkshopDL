@@ -18,6 +18,7 @@ public class LiteDbHistory
     public string DownloadLocation { get; set; }
     public string DownloadStatus { get; set; }
     public string DownloadSize { get; set; }
+    public long DownloadSizeBytes { get; set; }
 }
 
 public class SaveHistory : ReactiveObject, IDisposable
@@ -39,7 +40,7 @@ public class SaveHistory : ReactiveObject, IDisposable
     
     public event Func<string, Task>? LogAsync;
 
-    public async Task SaveHistoryAsync(string workshopTitle, string? workshopUrl, string downloadLocation, string downloadSize)
+    public async Task SaveHistoryAsync(string workshopTitle, string? workshopUrl, string downloadLocation, string downloadSize, long downloadSizeBytes)
     {
         await LogAsync($"Saving history for {workshopTitle}");
         var historyEntry = new LiteDbHistory
@@ -48,7 +49,8 @@ public class SaveHistory : ReactiveObject, IDisposable
             WorkshopTitle = workshopTitle,
             WorkshopUrl = workshopUrl,
             DownloadLocation = downloadLocation,
-            DownloadSize = downloadSize
+            DownloadSize = downloadSize,
+            DownloadSizeBytes = downloadSizeBytes
         };
         History.Insert(historyEntry);
         HistoryChangedSignal.OnNext(Unit.Default);
@@ -59,11 +61,12 @@ public class SaveHistory : ReactiveObject, IDisposable
         return History.FindAll();
     }
     
-    public IEnumerable<LiteDbHistory> GetRecentHistoryList()
-    {
-        if (History.Count() != 0)
-            yield return History.FindById(History.Max(x => x.Id));
-    }
+    // public IEnumerable<LiteDbHistory> GetRecentHistoryList()
+    // {
+    //     if (History.Count() != 0)
+    //         yield return History.FindById(History.Max(x => x.Id));
+    // }
+    
 
     public void DeleteHistory()
     {

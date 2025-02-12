@@ -44,9 +44,6 @@ public partial class HistoryViewModel : ReactiveObject
         get => _historyList;
         set => this.RaiseAndSetIfChanged(ref _historyList, value);
     }
-    
-    [RelayCommand]
-    public void OpenDownload() => Process.Start("xdg-open", _homeViewModel.DownloadedPath);
 
     public ObservableCollection<LiteDbHistory> FilteredHistory
     {
@@ -54,6 +51,37 @@ public partial class HistoryViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _filteredHistory, value);
     }
     
+    [RelayCommand]
+    private void OpenDownloads(LiteDbHistory selectedItems) => Process.Start("xdg-open", selectedItems.DownloadLocation);
+    
+    
+    [RelayCommand]
+    public void SortOldestDownloads()
+    {
+        var oldestDownloads = HistoryList.OrderBy(x  => x.Date);
+        FilteredHistory = new ObservableCollection<LiteDbHistory>(oldestDownloads);
+    }
+    
+    [RelayCommand]
+    public void SortRecentDownloads()
+    {
+        var recentDownloads = HistoryList.OrderByDescending(x  => x.Date);
+        FilteredHistory = new ObservableCollection<LiteDbHistory>(recentDownloads);
+    }
+    
+    [RelayCommand]
+    public void SortBiggestDownloads()
+    {
+        var biggestDownloads = HistoryList.OrderByDescending(x => x.DownloadSizeBytes);
+        FilteredHistory = new ObservableCollection<LiteDbHistory>(biggestDownloads);
+    }
+    
+    [RelayCommand]
+    public void SortSmallestDownloads()
+    {
+        var smallestDownloads = HistoryList.OrderBy(x  => x.DownloadSizeBytes);
+        FilteredHistory = new ObservableCollection<LiteDbHistory>(smallestDownloads);
+    }
 
     public string? SearchText
     {
@@ -66,7 +94,7 @@ public partial class HistoryViewModel : ReactiveObject
     {
         var allhistory = _history.GetAllHistoryList().ToList();
         HistoryList = new ObservableCollection<LiteDbHistory>(allhistory); 
-        FilteredHistory = new ObservableCollection<LiteDbHistory>(allhistory); 
+        FilteredHistory = new ObservableCollection<LiteDbHistory>(allhistory.OrderByDescending(h => h.Date)); 
     }
     
     /// <summary>
@@ -76,20 +104,13 @@ public partial class HistoryViewModel : ReactiveObject
     /// <param name="searchText"></param>
     private void SearchHistory(string? searchText)
     {
-        if (string.IsNullOrWhiteSpace(searchText))
-        {
-            // If search text is empty, show all games
-            FilteredHistory = new ObservableCollection<LiteDbHistory>(HistoryList);
-        }
-        else
-        {
+        if (string.IsNullOrWhiteSpace(searchText)) return;
             // Filter games based on search text (case-insensitive)
             var filtered = HistoryList
                 .Where(g => g.WorkshopTitle.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                             g.WorkshopUrl.Contains(searchText, StringComparison.OrdinalIgnoreCase))
                 .ToList();
             FilteredHistory = new ObservableCollection<LiteDbHistory>(filtered);
-        }
     }
     
     public bool NoHistory

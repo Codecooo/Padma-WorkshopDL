@@ -56,6 +56,7 @@ public class App : Application
         services.AddSingleton<CmdRunner>();
         services.AddSingleton<ThumbnailLoader>();
         services.AddSingleton<FolderPicker>();
+        services.AddSingleton<StellarisAutoInstall>();
     
         // Register AppIdFinder after DownloadProgressTracker
         services.AddSingleton<AppIdFinder>();

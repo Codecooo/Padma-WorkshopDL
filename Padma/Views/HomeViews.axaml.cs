@@ -23,6 +23,7 @@ public partial class HomeViews : UserControl
         _runner = App.ServiceProvider.GetRequiredService<CmdRunner>();
         _appIdFinder = App.ServiceProvider.GetRequiredService<AppIdFinder>();
         _findThumbnailLoader = App.ServiceProvider.GetRequiredService<ThumbnailLoader>();
+        _stellarisAutoInstall = App.ServiceProvider.GetRequiredService<StellarisAutoInstall>();
 
         // Get the ViewModel but don't set DataContext yet
         _homeViewModel = App.ServiceProvider.GetRequiredService<HomeViewModel>();
@@ -76,6 +77,7 @@ public partial class HomeViews : UserControl
         _appIdFinder.LogAsync += UiLogAsync;
         _findThumbnailLoader.LogAsync += UiLogAsync;
         _history.LogAsync += UiLogAsync;
+        _stellarisAutoInstall.LogAsync += UiLogAsync;
     }
 
     private void HideConsole_Hovered(object? sender, PointerEventArgs e)
@@ -126,6 +128,7 @@ public partial class HomeViews : UserControl
     private readonly AppIdFinder _appIdFinder;
     private readonly CmdRunner _runner;
     private readonly HomeViewModel _homeViewModel;
+    private readonly StellarisAutoInstall _stellarisAutoInstall;
     private readonly ThumbnailLoader _findThumbnailLoader;
     private readonly SaveHistory _history;
 

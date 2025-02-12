@@ -24,6 +24,7 @@ namespace Padma.Views
             var appIdFinder = new AppIdFinder(downloadProgressTracker);
             var cmdRunner = new CmdRunner(folderpicker);
             var thumbnailLoader = new ThumbnailLoader();
+            var stellarisAutoInstall = new StellarisAutoInstall();
 
             // Create ViewModels with dependencies
             var supportedGamesViewModel = new SupportedGamesViewModel(supportedGames);
@@ -33,7 +34,8 @@ namespace Padma.Views
                 cmdRunner,
                 thumbnailLoader,
                 downloadProgressTracker,
-                folderpicker
+                folderpicker,
+                stellarisAutoInstall
             );
             var historyViewModel = new HistoryViewModel(saveHistory, homeViewModel);
             var settingsViewModel = new SettingsViewModel(saveHistory, folderpicker);

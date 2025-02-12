@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace Padma.Services;
 
@@ -106,7 +107,7 @@ public class DownloadProgressTracker : ReactiveObject
         private void OnDownloadFolderChanged(object sender, FileSystemEventArgs e)
         {
             // Restart debounce timer for 500ms delay.
-            ProgressDebounceTimer?.Change(160, Timeout.Infinite);
+            ProgressDebounceTimer?.Change(50, Timeout.Infinite);
         }
 
         // Recalculate the progress once there have been no file events for 500ms.
@@ -121,6 +122,11 @@ public class DownloadProgressTracker : ReactiveObject
                     CurrentSize = newSize;
                     int downloadPercentage = (int)(Math.Round((double)CurrentSize / TotalSize, 2) * 100);
                     ProgressUpdated?.Invoke(downloadPercentage);
+                    if (downloadPercentage == 100)
+                    {
+                        Task.Delay(TimeSpan.FromSeconds(1))
+                            .ContinueWith(_ => ProgressUpdated?.Invoke(0), TaskScheduler.FromCurrentSynchronizationContext());
+                    }
                 }
             }
             catch (Exception ex)

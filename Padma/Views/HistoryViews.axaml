@@ -13,9 +13,21 @@
                Content="Downloads History"
                VerticalAlignment="Top"
                HorizontalAlignment="Center"/>
-        <TextBox Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding SearchText}" Margin="5"
-                 Width="550" Height="30" AcceptsReturn="True"
-                 Watermark="Search Downloads" />
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Orientation="Horizontal">
+            <TextBox  Text="{Binding SearchText}" Margin="5"
+                      Width="550" Height="30" AcceptsReturn="True"
+                      Watermark="Search Downloads" />
+            <SplitButton Foreground="White" Content="Sort" Background="{DynamicResource ItemsDarkBrush}">
+                <SplitButton.Flyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                        <MenuItem Header="Most Recent" Command="{Binding SortRecentDownloadsCommand}"></MenuItem>
+                        <MenuItem Header="Oldest" Command="{Binding SortOldestDownloadsCommand}"></MenuItem>
+                        <MenuItem Header="Biggest Size" Command="{Binding SortBiggestDownloadsCommand}"></MenuItem>
+                        <MenuItem Header="Smallest Size" Command="{Binding SortSmallestDownloadsCommand}"></MenuItem>
+                    </MenuFlyout>
+                </SplitButton.Flyout>
+            </SplitButton>
+        </StackPanel>
         <Grid Grid.Row="2">
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden">
                 <ItemsControl ItemsSource="{Binding FilteredHistory}">
@@ -29,7 +41,7 @@
                             <Border Height="83" Background="{DynamicResource ItemsDarkBrush}" Padding="10" Margin="5">
                                 <Grid RowDefinitions="Auto, Auto, Auto">
                                     <TextBlock Grid.Row="0" FontSize="13" Foreground="Wheat" Text="{Binding WorkshopTitle}"/>
-                                    <Button Command="{Binding $parent[ItemsControl].((vm:HistoryViewModel)DataContext).OpenDownloadCommand}" ZIndex="1" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Right">
+                                    <Button CommandParameter="{Binding}" Command="{Binding $parent[ItemsControl].((vm:HistoryViewModel)DataContext).OpenDownloadsCommand}" ZIndex="1" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Right">
                                         <Svg Path="/Assets/folder.svg" Width="20" Height="20"/>
                                     </Button>
                                     <TextBox Grid.Row="1" FontSize="12" Classes="HistoryUrl" IsReadOnly="True" Foreground="Wheat" Text="{Binding WorkshopUrl}"/>

@@ -20,6 +20,7 @@ namespace Padma.ViewModels
         private readonly DownloadProgressTracker _downloadTracker;
         private readonly AppIdFinder _appIdFinder;
         private readonly CmdRunner _runner;
+        private readonly StellarisAutoInstall _stellarisAutoInstall;
         private readonly SaveHistory _history;
         private readonly FolderPicker _folderPicker;
         private readonly ThumbnailLoader _thumbnailLoader;
@@ -50,7 +51,8 @@ namespace Padma.ViewModels
             CmdRunner runner,
             ThumbnailLoader thumbnailLoader,
             DownloadProgressTracker downloadTracker,
-            FolderPicker folderPicker)
+            FolderPicker folderPicker,
+            StellarisAutoInstall stellarisAutoInstall)
         {
             _history = history;
             _folderPicker = folderPicker;
@@ -58,12 +60,10 @@ namespace Padma.ViewModels
             _runner = runner;
             _thumbnailLoader = thumbnailLoader;
             _downloadTracker = downloadTracker;
+            _stellarisAutoInstall = stellarisAutoInstall;
 
             // Subscribe to progress updates
             _downloadTracker.ProgressUpdated += progress => DownloadProgress = progress;
-            
-            _history.HistoryChangedSignal
-                .Subscribe(_ => LoadRecentHistory());
 
             this.WhenAnyValue(x => x.DownloadStatusNow)
                 .Subscribe(_ => AutoClearDownloadBar());
@@ -108,7 +108,8 @@ namespace Padma.ViewModels
                     WorkshopTitle,
                     _workshopUrl,
                     DownloadedPath,
-                    _appIdFinder.FileSizeInfo); 
+                    _appIdFinder.FileSizeInfo,
+                    _appIdFinder.FileSizeBytes); 
         }
 
         private async Task ExtractAppIdAndThumbnail()
@@ -136,7 +137,9 @@ namespace Padma.ViewModels
         {
             try
             {
+                _cts.Cancel();
                 IsEnabled = false;
+                DownloadedPath = Path.Combine(_folderPicker.FolderPathView, AppId, WorkshopId);
                 _downloadTracker.DownloadFolder = _folderPicker.SelectedPath;
                 _appIdFinder.SetValuesOfProgressTracker();
                 DownloadStatusNow = "Downloading"; 
@@ -149,6 +152,11 @@ namespace Padma.ViewModels
                 DownloadStatusNow = _runner.Success ? "Finished" : "Failed";
                 if (_history.HistoryEnabled && _runner.Success)
                     await SaveHistory();
+                if (AppId is "281990")
+                {
+                    await LogAsync($"Workshop {WorkshopId} is a Stellaris mod");
+                    await _stellarisAutoInstall.RunStellarisAutoInstallMods(DownloadedPath);
+                } 
                 await LogAsync("All processes finished.");
                 IsEnabled = true;
                 ButtonContent = "Open";
@@ -160,7 +168,6 @@ namespace Padma.ViewModels
         {
             if (DownloadStatusNow is "Finished")
             {
-                DownloadedPath = Path.Combine(_folderPicker.FolderPathView, AppId, WorkshopId);
                 await _folderPicker.OpenFolder(DownloadedPath);                
             }
             else
@@ -264,15 +271,6 @@ namespace Padma.ViewModels
         }
         
         #endregion
-        
-        
-        // Reload recent history from the model.
-        private void LoadRecentHistory()
-        {
-            var recenthistory = _history.GetRecentHistoryList().ToList();
-            HistoryList = new ObservableCollection<LiteDbHistory>(recenthistory);
-            _cts.Cancel();
-        }
 
         // Update the download status in the view model.
         public void AutoClearDownloadBar()
@@ -284,7 +282,6 @@ namespace Padma.ViewModels
                 _downloadTracker.DownloadWatcher?.Dispose();
                 _downloadTracker.FolderWatcher?.Dispose();
                 _downloadTracker.ProgressDebounceTimer?.Dispose();
-                DownloadProgress = 0;
                 _downloadTracker.CurrentSize = 0;
                 Task.Delay(TimeSpan.FromMinutes(1.6), _cts.Token)
                     .ContinueWith(x =>
