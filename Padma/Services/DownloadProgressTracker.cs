@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 
 namespace Padma.Services;
 
@@ -15,14 +14,12 @@ public class DownloadProgressTracker : ReactiveObject
     public FileSystemWatcher? FolderWatcher;
     public FileSystemWatcher? DownloadWatcher;
     public long CurrentSize;
-    // For debouncing progress updates.
     public Timer? ProgressDebounceTimer;
-    // We'll store the download folder path once the folder is created.
     public string DownloadFolder;
+    private bool _isTracking;
     
     public DownloadProgressTracker()
     {
-        // When both AppId and WorkshopId are provided, start tracking.
         this.WhenAnyValue(x => x.AppId, x => x.WorkshopId,
                 (appId, workshopId) => !string.IsNullOrWhiteSpace(appId) && !string.IsNullOrWhiteSpace(workshopId))
             .Where(valid => valid)
@@ -44,94 +41,109 @@ public class DownloadProgressTracker : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _workshopId, value);
     }
 
-     // This method watches the parent directory for the download folder.
-        public void StartTrackingDownload(string appId, string workshopId)
-        {
-            DownloadFolder = Path.Combine(DownloadFolder, "steamapps", "workshop", "downloads");
+    public void Reset()
+    {
+        _isTracking = false;
+        CurrentSize = 0;
+        DisposeWatchers();
+        ProgressUpdated?.Invoke(0);
+    }
 
-            if (!Directory.Exists(DownloadFolder))
+    private void DisposeWatchers()
+    {
+        DownloadWatcher?.Dispose();
+        DownloadWatcher = null;
+        FolderWatcher?.Dispose();
+        FolderWatcher = null;
+        ProgressDebounceTimer?.Dispose();
+        ProgressDebounceTimer = null;
+    }
+
+    public void StartTrackingDownload(string appId, string workshopId)
+    {
+        if (_isTracking) Reset();
+        _isTracking = true;
+        
+        DownloadFolder = Path.Combine(DownloadFolder, "steamapps", "workshop", "downloads");
+
+        if (!Directory.Exists(DownloadFolder))
+        {
+            Console.WriteLine("Base folder does not exist. Waiting for it to be created.");
+            return;
+        }
+
+        FolderWatcher = new FileSystemWatcher(DownloadFolder)
+        {
+            Filter = "*",
+            NotifyFilter = NotifyFilters.DirectoryName,
+            IncludeSubdirectories = true
+        };
+
+        FolderWatcher.Created += (s, e) =>
+        {
+            var dirInfo = new DirectoryInfo(e.FullPath);
+            if (dirInfo.Name.Equals(workshopId, StringComparison.OrdinalIgnoreCase) &&
+                dirInfo.Parent?.Name.Equals(appId, StringComparison.OrdinalIgnoreCase) == true)
             {
-                Console.WriteLine("Base folder does not exist. Waiting for it to be created.");
-                return;
+                DownloadFolder = e.FullPath;
+                FolderWatcher.EnableRaisingEvents = false;
+                AttachDownloadWatcher(DownloadFolder);
             }
+        };
+        FolderWatcher.EnableRaisingEvents = true;
+    }
 
-            FolderWatcher = new FileSystemWatcher(DownloadFolder)
-            {
-                Filter = "*",
-                NotifyFilter = NotifyFilters.DirectoryName,
-                IncludeSubdirectories = true
-            };
-
-            FolderWatcher.Created += (s, e) =>
-            {
-                var dirInfo = new DirectoryInfo(e.FullPath);
-                // Check if the created folder's name is the workshopId and its parent's name is appId.
-                if (dirInfo.Name.Equals(workshopId, StringComparison.OrdinalIgnoreCase) &&
-                    dirInfo.Parent?.Name.Equals(appId, StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    DownloadFolder = e.FullPath;
-                    FolderWatcher.EnableRaisingEvents = false; // Stop watching parent folder.
-                    AttachDownloadWatcher(DownloadFolder);
-                }
-            };
-            FolderWatcher.EnableRaisingEvents = true;
-        }
-
-        // Attach a watcher to the newly created download folder.
-        private void AttachDownloadWatcher(string folderPath)
-        {
-            // Initialize current size.
-            CurrentSize = Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories)
-                            .Sum(file => new FileInfo(file).Length);
-
-            DownloadWatcher = new FileSystemWatcher(folderPath)
-            {
-                IncludeSubdirectories = true,
-                NotifyFilter = NotifyFilters.FileName | NotifyFilters.Size | NotifyFilters.LastWrite
-            };
-
-            // Instead of immediately recalculating on every event,
-            // we reset a debounce timer.
-            DownloadWatcher.Changed += OnDownloadFolderChanged;
-            DownloadWatcher.Created += OnDownloadFolderChanged;
-            DownloadWatcher.Deleted += OnDownloadFolderChanged;
-            DownloadWatcher.Renamed += OnDownloadFolderChanged;
-
-            DownloadWatcher.EnableRaisingEvents = true;
-
-            // Create debounce timer, set to trigger after 160ms of inactivity.
-            ProgressDebounceTimer = new Timer(_ => RecalculateProgress(), null, Timeout.Infinite, Timeout.Infinite);
-        }
-
-        // When a file event occurs, restart the debounce timer.
-        private void OnDownloadFolderChanged(object sender, FileSystemEventArgs e)
-        {
-            // Restart debounce timer for 500ms delay.
-            ProgressDebounceTimer?.Change(50, Timeout.Infinite);
-        }
-
-        // Recalculate the progress once there have been no file events for 500ms.
-        private void RecalculateProgress()
-        {
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(DownloadFolder) && Directory.Exists(DownloadFolder))
-                {
-                    long newSize = Directory.GetFiles(DownloadFolder, "*", SearchOption.AllDirectories)
+    private void AttachDownloadWatcher(string folderPath)
+    {
+        CurrentSize = Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories)
                         .Sum(file => new FileInfo(file).Length);
-                    CurrentSize = newSize;
-                    int downloadPercentage = (int)(Math.Round((double)CurrentSize / TotalSize, 2) * 100);
-                    ProgressUpdated?.Invoke(downloadPercentage);
-                    if (downloadPercentage == 100)
-                    {
-                        Task.Delay(TimeSpan.FromSeconds(1))
-                            .ContinueWith(_ => ProgressUpdated?.Invoke(0), TaskScheduler.FromCurrentSynchronizationContext());
-                    }
-                }
-            }
-            catch (Exception ex)
+
+        DownloadWatcher = new FileSystemWatcher(folderPath)
+        {
+            IncludeSubdirectories = true,
+            NotifyFilter = NotifyFilters.FileName | NotifyFilters.Size | NotifyFilters.LastWrite
+        };
+
+        DownloadWatcher.Changed += OnDownloadFolderChanged;
+        DownloadWatcher.Created += OnDownloadFolderChanged;
+        DownloadWatcher.Deleted += OnDownloadFolderChanged;
+        DownloadWatcher.Renamed += OnDownloadFolderChanged;
+
+        DownloadWatcher.EnableRaisingEvents = true;
+
+        ProgressDebounceTimer = new Timer(_ => RecalculateProgress(), null, Timeout.Infinite, Timeout.Infinite);
+    }
+
+    private void OnDownloadFolderChanged(object sender, FileSystemEventArgs e)
+    {
+        if (!_isTracking) return;
+        ProgressDebounceTimer?.Change(50, Timeout.Infinite);
+    }
+
+    private void RecalculateProgress()
+    {
+        try
+        {
+            if (!_isTracking) return;
+            
+            if (!string.IsNullOrWhiteSpace(DownloadFolder) && Directory.Exists(DownloadFolder))
             {
-                Console.WriteLine($"Error recalculating download progress: {ex.Message}");
+                long newSize = Directory.GetFiles(DownloadFolder, "*", SearchOption.AllDirectories)
+                    .Sum(file => new FileInfo(file).Length);
+                CurrentSize = newSize;
+                int downloadPercentage = (int)(Math.Round((double)CurrentSize / TotalSize, 2) * 100);
+                
+                if (downloadPercentage >= 100)
+                {
+                    _isTracking = false;
+                }
+                
+                ProgressUpdated?.Invoke(downloadPercentage);
             }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error recalculating download progress: {ex.Message}");
+        }
+    }
 }

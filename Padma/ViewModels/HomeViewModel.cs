@@ -89,7 +89,9 @@ namespace Padma.ViewModels
         private async Task AppIdFinder() 
         {
             await _appIdFinder.ExtractWorkshopId(WorkshopUrl);
+            if (string.IsNullOrEmpty(_appIdFinder.WorkshopId)) return; 
             await _appIdFinder.AppFinder();
+            WorkshopId = _appIdFinder.WorkshopId;
             AppId = _appIdFinder.AppId;
             WorkshopTitle = _appIdFinder.ModTitle;
         }
@@ -121,8 +123,6 @@ namespace Padma.ViewModels
                 await AppIdFinder(); // This is now awaited correctly
                 var bitmap = await _thumbnailLoader.LoadThumbnail(_appIdFinder.ThumbnailUrl);
                 ModsThumbnail = bitmap;
-                AppId = _appIdFinder.AppId;
-                WorkshopId = _appIdFinder.WorkshopId;
                 FileSizeInfo = _appIdFinder.FileSizeInfo;
                 IsVisible = true;
             }
@@ -154,8 +154,8 @@ namespace Padma.ViewModels
                     await SaveHistory();
                 if (AppId is "281990")
                 {
-                    await LogAsync($"Workshop {WorkshopId} is a Stellaris mod");
-                    await _stellarisAutoInstall.RunStellarisAutoInstallMods(DownloadedPath);
+                    await LogAsync($"Workshop item {WorkshopId} is a Stellaris mod");
+                    await _stellarisAutoInstall.RunStellarisAutoInstallMods(DownloadedPath, WorkshopTitle);
                 } 
                 await LogAsync("All processes finished.");
                 IsEnabled = true;
@@ -279,10 +279,7 @@ namespace Padma.ViewModels
             {
                 _cts.Dispose();
                 _cts = new CancellationTokenSource();
-                _downloadTracker.DownloadWatcher?.Dispose();
-                _downloadTracker.FolderWatcher?.Dispose();
-                _downloadTracker.ProgressDebounceTimer?.Dispose();
-                _downloadTracker.CurrentSize = 0;
+                _downloadTracker.Reset();
                 Task.Delay(TimeSpan.FromMinutes(1.6), _cts.Token)
                     .ContinueWith(x =>
                     {

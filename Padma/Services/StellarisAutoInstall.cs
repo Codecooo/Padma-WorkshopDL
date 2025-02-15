@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
+using DynamicData;
 
 namespace Padma.Services;
 
@@ -20,7 +21,12 @@ public class StellarisAutoInstall
             ".local/share/Paradox Interactive/Stellaris/mod"
         );
     }
-
+    
+    /// <summary>
+    /// Just for testing whether or not we have permission to do all of this
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
     private async Task<bool> TryCreateDirectory(string path)
     {
         try
@@ -31,7 +37,7 @@ public class StellarisAutoInstall
             }
             // Test write permissions by attempting to create a temporary file
             var testFile = Path.Combine(path, ".write_test");
-            await File.WriteAllTextAsync(testFile, string.Empty);
+            await File.WriteAllTextAsync(testFile, "Yay we got permission!");
             File.Delete(testFile);
             return true;
         }
@@ -41,7 +47,7 @@ public class StellarisAutoInstall
         }
     }
 
-    public async Task RunStellarisAutoInstallMods(string modsDownloadPath)
+    public async Task RunStellarisAutoInstallMods(string modsDownloadPath, string workshopTitle)
     {
         try
         {
@@ -55,7 +61,7 @@ public class StellarisAutoInstall
             }
 
             await LogAsync?.Invoke($"Installing mods to {_stellarisDocPath}");
-            await MoveStellarisMods(modsDownloadPath);
+            await MoveStellarisMods(modsDownloadPath, workshopTitle);
         }
         catch (Exception ex)
         {
@@ -64,7 +70,12 @@ public class StellarisAutoInstall
         }
     }
 
-    private async Task MoveStellarisMods(string downloadPath)
+    /// <summary>
+    /// Automatically rename descriptor.mod to mod title and move it alongside the mod directory
+    /// to the Stellaris game path. 
+    /// </summary>
+    /// <param name="downloadPath"></param>
+    private async Task MoveStellarisMods(string downloadPath, string workshopTitle)
     {
         try
         {
@@ -80,6 +91,12 @@ public class StellarisAutoInstall
                     }
                     ZipFile.ExtractToDirectory(zipFile, downloadPath, true);
                     File.Delete(zipFile);
+                }
+                catch (InvalidDataException ex) when (ex.Message.Contains("bzip2"))
+                {
+                    // If it's a bzip2 error, log it and continue - the content might already be extracted
+                    await LogAsync?.Invoke($"Skipping bzip2 compressed file {zipFile} - content may already be extracted. If not install it manually");
+                    continue;
                 }
                 catch (UnauthorizedAccessException)
                 {
@@ -101,19 +118,20 @@ public class StellarisAutoInstall
                 return;
             }
 
-            string[] lines;
+            List<string> descriptorLines;
             try
             {
-                lines = await File.ReadAllLinesAsync(descriptor);
+                descriptorLines = (await File.ReadAllLinesAsync(descriptor)).ToList();
             }
             catch (UnauthorizedAccessException)
             {
                 await LogAsync?.Invoke($"No permission to read {descriptor}");
                 return;
             }
-
+            
+            // get the value of mod title in the descriptor.mod
             var modNameRegex = new Regex(@"name=""(.*?)""", RegexOptions.IgnoreCase);
-            var modTitle = lines
+            var modTitle = descriptorLines
                 .Select(l => modNameRegex.Match(l))
                 .Where(m => m.Success)
                 .Select(m => m.Groups[1].Value)
@@ -121,12 +139,13 @@ public class StellarisAutoInstall
 
             if (string.IsNullOrEmpty(modTitle))
             {
-                await LogAsync?.Invoke("Could not find mod name in descriptor.mod");
-                return;
+                await LogAsync?.Invoke("Could not find mod name in descriptor.mod, using workshop title");
+                modTitle = workshopTitle;
+                descriptorLines.Add($"name=\"{workshopTitle}\"");
             }
 
-            // Update descriptor
-            var modDescriptor = lines.Where(line => !line.TrimStart().StartsWith("path=")).ToList();
+            // Update descriptor - use descriptorLines which now contains the new title if it was added
+            var modDescriptor = descriptorLines.Where(line => !line.TrimStart().StartsWith("path=")).ToList();
             modDescriptor.Add($"path=\"{Path.Combine(_stellarisDocPath, modTitle)}\"");
 
             // Ensure target paths are available
@@ -135,14 +154,11 @@ public class StellarisAutoInstall
 
             try
             {
-                // Clean up existing files if necessary
-                if (Directory.Exists(targetModPath))
-                {
-                    Directory.Delete(targetModPath, true);
-                }
-
+                // Write the updated descriptor content
+                await File.WriteAllLinesAsync(descriptor, modDescriptor);
+                
                 // Move files with explicit file mode
-                await File.WriteAllLinesAsync(targetDescriptorPath, modDescriptor);
+                File.Move(descriptor, targetDescriptorPath, true);
                 Directory.Move(downloadPath, targetModPath);
 
                 await LogAsync?.Invoke($"Successfully installed mod: {modTitle}");

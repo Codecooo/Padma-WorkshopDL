@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.IO;
+using Newtonsoft.Json.Linq;
 using Avalonia.Controls.ApplicationLifetimes;
 
 
@@ -13,12 +14,38 @@ namespace Padma.Services;
 
 public class FolderPicker
 {
-    public string SelectedPath =  Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Padma");
-    public string FolderPathView;
+    private readonly string _settingsPath = "/home/lagita/RiderProjects/Padma/Padma/appsettings.json";
+    public string SelectedPath { get; private set; }
+    public string FolderPathView { get; private set; }
     public event Func<string, Task>? LogAsync;
 
     public FolderPicker()
     {
+        InitializeFromSettings();
+    }
+
+    private void InitializeFromSettings()
+    {
+        try
+        {
+            var defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Padma");
+            var settings = JObject.Parse(File.ReadAllText(_settingsPath));
+            var downloadPath = settings["download_path"]?.ToString();
+            
+            SelectedPath = downloadPath == "default" ? defaultPath : downloadPath ?? defaultPath;
+            FolderPathView = Path.Combine(SelectedPath, "steamapps", "workshop", "content");
+        }
+        catch
+        {
+            // Fallback to default if settings file can't be read
+            SelectedPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Padma");
+            FolderPathView = Path.Combine(SelectedPath, "steamapps", "workshop", "content");
+        }
+    }
+
+    public void UpdatePaths(string newSelectedPath)
+    {
+        SelectedPath = newSelectedPath;
         FolderPathView = Path.Combine(SelectedPath, "steamapps", "workshop", "content");
     }
     

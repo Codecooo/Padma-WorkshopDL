@@ -23,8 +23,6 @@ public class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        try
-        {
             var services = new ServiceCollection();
             ConfigureServices(services);
             ServiceProvider = services.BuildServiceProvider();
@@ -39,12 +37,6 @@ public class App : Application
             }
 
             base.OnFrameworkInitializationCompleted();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"Initialization error: {e}");
-            throw;
-        }
     }
 
     private static void ConfigureServices(IServiceCollection services)

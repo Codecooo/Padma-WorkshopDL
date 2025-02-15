@@ -10,7 +10,7 @@
         <Label Margin="5" HorizontalAlignment="Center" Grid.Row="0" Foreground="Gray" Content="Settings" FontSize="28"/>
         <StackPanel Spacing="3" Grid.Row="1" Orientation="Vertical">
             <TextBlock FontSize="17" Margin="30,0,5,0" Foreground="White" Text="Disable History" VerticalAlignment="Center"/>
-            <ToggleSwitch Margin="60,0" Foreground="White" Command="{Binding RememberHistoryToggleCommand}" Name="RememberHistoryToggle" />
+            <ToggleSwitch IsChecked="{Binding IsChecked}" Margin="60,0" Foreground="White" Command="{Binding RememberHistoryToggleCommand}" Name="RememberHistoryToggle" />
         </StackPanel>
         <StackPanel Grid.Row="2" Spacing="3">
             <TextBlock FontSize="17" Margin="30,17,5,0" Foreground="White" Text="Clear History" VerticalAlignment="Center"/>
