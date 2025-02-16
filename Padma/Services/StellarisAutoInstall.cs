@@ -5,18 +5,17 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
-using DynamicData;
 
 namespace Padma.Services;
 
 public class StellarisAutoInstall
 {
-    private readonly string _stellarisDocPath;
+    public readonly string StellarisDocPath;
     public event Func<string, Task>? LogAsync;
 
     public StellarisAutoInstall()
     {
-        _stellarisDocPath = Path.Combine(
+        StellarisDocPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             ".local/share/Paradox Interactive/Stellaris/mod"
         );
@@ -54,13 +53,13 @@ public class StellarisAutoInstall
             if (string.IsNullOrEmpty(modsDownloadPath))
                 throw new ArgumentException("Download path cannot be empty", nameof(modsDownloadPath));
 
-            if (!await TryCreateDirectory(_stellarisDocPath))
+            if (!await TryCreateDirectory(StellarisDocPath))
             {
-                await LogAsync?.Invoke($"Error: No write permission for {_stellarisDocPath}");
+                await LogAsync?.Invoke($"Error: No write permission for {StellarisDocPath}");
                 return;
             }
 
-            await LogAsync?.Invoke($"Installing mods to {_stellarisDocPath}");
+            await LogAsync?.Invoke($"Installing mods to {StellarisDocPath}");
             await MoveStellarisMods(modsDownloadPath, workshopTitle);
         }
         catch (Exception ex)
@@ -146,11 +145,11 @@ public class StellarisAutoInstall
 
             // Update descriptor - use descriptorLines which now contains the new title if it was added
             var modDescriptor = descriptorLines.Where(line => !line.TrimStart().StartsWith("path=")).ToList();
-            modDescriptor.Add($"path=\"{Path.Combine(_stellarisDocPath, modTitle)}\"");
+            modDescriptor.Add($"path=\"{Path.Combine(StellarisDocPath, modTitle)}\"");
 
             // Ensure target paths are available
-            var targetModPath = Path.Combine(_stellarisDocPath, modTitle);
-            var targetDescriptorPath = Path.Combine(_stellarisDocPath, $"{modTitle}.mod");
+            var targetModPath = Path.Combine(StellarisDocPath, modTitle);
+            var targetDescriptorPath = Path.Combine(StellarisDocPath, $"{modTitle}.mod");
 
             try
             {

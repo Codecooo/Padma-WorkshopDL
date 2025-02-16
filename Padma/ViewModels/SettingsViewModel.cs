@@ -14,7 +14,7 @@ public partial class SettingsViewModel : ReactiveObject
     private readonly FolderPicker _folderPicker;
     private string _folderPathView;
     private string _appSettings;
-    private bool _disableHistory;
+    private bool _historyEnabled;
     private bool _isChecked;
     private string? _downloadPath;
     private string _appSettingsPath;
@@ -33,11 +33,14 @@ public partial class SettingsViewModel : ReactiveObject
 
     private void ReadAppSettings()
     {
-        _disableHistory = bool.Parse(_settings["history_enabled"].ToString());
+        _historyEnabled = bool.Parse(_settings["history_enabled"].ToString());
         _downloadPath = _settings["download_path"].ToString();
-    
-        if (!_disableHistory)
+
+        if (!_historyEnabled)
+        {
             IsChecked = true;
+            _saveHistory.HistoryEnabled = false;
+        }
         
         if (_downloadPath is not "default")
         {

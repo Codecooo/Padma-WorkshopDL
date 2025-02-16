@@ -69,7 +69,7 @@ public class FolderPicker
     {
         try
         {
-            Process.Start("xdg-open", folderPath);
+            Process.Start("xdg-open", $"{folderPath}");
         }
         catch (Exception e)
         {
@@ -83,7 +83,7 @@ public class FolderPicker
             desktop.MainWindow?.StorageProvider is not { } provider)
         {
             await LogAsync("Missing StorageProvider instance.");
-            return null; // Ensure the function exits properly
+            return null; 
         }
 
         var folder = await provider.OpenFolderPickerAsync(new FolderPickerOpenOptions

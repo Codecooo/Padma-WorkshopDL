@@ -142,25 +142,29 @@ namespace Padma.ViewModels
                 DownloadedPath = Path.Combine(_folderPicker.FolderPathView, AppId, WorkshopId);
                 _downloadTracker.DownloadFolder = _folderPicker.SelectedPath;
                 _appIdFinder.SetValuesOfProgressTracker();
-                DownloadStatusNow = "Downloading"; 
+                DownloadStatusNow = "Downloading";
                 DownloadStarted = true;
                 ButtonContent = "Cancel";
                 await _runner.RunSteamCmd(_workshopId, _appId);
             }
-            finally
+            catch (Exception ex)
             {
+                await LogAsync($"Error: {ex.Message}");
+                return;
+            }
                 DownloadStatusNow = _runner.Success ? "Finished" : "Failed";
-                if (_history.HistoryEnabled && _runner.Success)
-                    await SaveHistory();
+                IsEnabled = true;
+                if (DownloadStatusNow == "Failed") return;
                 if (AppId is "281990")
                 {
                     await LogAsync($"Workshop item {WorkshopId} is a Stellaris mod");
                     await _stellarisAutoInstall.RunStellarisAutoInstallMods(DownloadedPath, WorkshopTitle);
+                    DownloadedPath = $"\"{_stellarisAutoInstall.StellarisDocPath}\"";
                 } 
+                if (_history.HistoryEnabled && _runner.Success)
+                    await SaveHistory();
                 await LogAsync("All processes finished.");
-                IsEnabled = true;
                 ButtonContent = "Open";
-            }
         }
         
         [RelayCommand]

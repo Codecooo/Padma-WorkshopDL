@@ -52,7 +52,7 @@ public partial class HistoryViewModel : ReactiveObject
     }
     
     [RelayCommand]
-    private void OpenDownloads(LiteDbHistory selectedItems) => Process.Start("xdg-open", selectedItems.DownloadLocation);
+    private void OpenDownloads(LiteDbHistory selectedItems) => Process.Start("xdg-open", $"\"{selectedItems.DownloadLocation}\"");
     
     
     [RelayCommand]

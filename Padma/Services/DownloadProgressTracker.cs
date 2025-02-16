@@ -15,7 +15,9 @@ public class DownloadProgressTracker : ReactiveObject
     public FileSystemWatcher? DownloadWatcher;
     public long CurrentSize;
     public Timer? ProgressDebounceTimer;
-    public string DownloadFolder;
+    private string _workshopId = string.Empty;
+    private string _appId = string.Empty;
+    public string DownloadFolder = string.Empty;
     private bool _isTracking;
     
     public DownloadProgressTracker()
@@ -23,18 +25,15 @@ public class DownloadProgressTracker : ReactiveObject
         this.WhenAnyValue(x => x.AppId, x => x.WorkshopId,
                 (appId, workshopId) => !string.IsNullOrWhiteSpace(appId) && !string.IsNullOrWhiteSpace(workshopId))
             .Where(valid => valid)
-            .Take(1)
             .Subscribe(_ => StartTrackingDownload(AppId, WorkshopId));
     }
 
-    private string _appId = string.Empty;
     public string AppId
     {
         get => _appId;
         set => this.RaiseAndSetIfChanged(ref _appId, value);
     }
 
-    private string _workshopId = string.Empty;
     public string WorkshopId
     {
         get => _workshopId;
