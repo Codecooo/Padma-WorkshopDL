@@ -40,6 +40,7 @@ namespace Padma.ViewModels
         private string _downloadStatus;
         private int _downloadProgress;
         private ObservableCollection<LiteDbHistory> _historyList = new();
+        public bool StellarisAutoInstallEnabled = true;
 
         #endregion
 
@@ -118,6 +119,7 @@ namespace Padma.ViewModels
         {
             try
             {
+                IsEnabled = false;
                 if (string.IsNullOrEmpty(WorkshopUrl)) return;
                 // Fetch App ID properly
                 await AppIdFinder(); // This is now awaited correctly
@@ -125,6 +127,7 @@ namespace Padma.ViewModels
                 ModsThumbnail = bitmap;
                 FileSizeInfo = _appIdFinder.FileSizeInfo;
                 IsVisible = true;
+                IsEnabled = true;
             }
             catch (Exception ex)
             {
@@ -147,15 +150,11 @@ namespace Padma.ViewModels
                 ButtonContent = "Cancel";
                 await _runner.RunSteamCmd(_workshopId, _appId);
             }
-            catch (Exception ex)
+            finally
             {
-                await LogAsync($"Error: {ex.Message}");
-                return;
-            }
                 DownloadStatusNow = _runner.Success ? "Finished" : "Failed";
                 IsEnabled = true;
-                if (DownloadStatusNow == "Failed") return;
-                if (AppId is "281990")
+                if (AppId is "281990" && DownloadStatusNow is "Finished" && StellarisAutoInstallEnabled)
                 {
                     await LogAsync($"Workshop item {WorkshopId} is a Stellaris mod");
                     await _stellarisAutoInstall.RunStellarisAutoInstallMods(DownloadedPath, WorkshopTitle);
@@ -165,6 +164,7 @@ namespace Padma.ViewModels
                     await SaveHistory();
                 await LogAsync("All processes finished.");
                 ButtonContent = "Open";
+            }
         }
         
         [RelayCommand]

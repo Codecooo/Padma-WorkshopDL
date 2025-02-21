@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using LiteDB;
 
 namespace Padma.Models;
@@ -18,7 +19,7 @@ public class SupportedGames : IDisposable
 
     public SupportedGames()
     {
-        _db = new LiteDatabase("/home/lagita/RiderProjects/Padma/Padma/LiteDB/list_supported_games.db");
+         _db = new LiteDatabase(Path.Combine(AppContext.BaseDirectory, "LiteDB", "list_supported_games.db"));
     }
 
     public ILiteCollection<SupportedGamesData> SupportData => _db.GetCollection<SupportedGamesData>("supported_games");

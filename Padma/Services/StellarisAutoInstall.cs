@@ -16,8 +16,7 @@ public class StellarisAutoInstall
     public StellarisAutoInstall()
     {
         StellarisDocPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".local/share/Paradox Interactive/Stellaris/mod"
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Paradox Interactive", "Stellaris", "mod"
         );
     }
     

@@ -14,7 +14,7 @@ public class CmdRunner
     public string SteamCmdFilePath = string.Empty;
     public string DownloadPath = string.Empty;
 
-    private const int MaxRetries = 3;
+    private const int MaxRetries = 6;
     private const int RetryDelaySeconds = 10;
     private const int DownloadTimeoutMinutes = 30;
     public event Func<string, Task>? LogAsync;
@@ -26,7 +26,7 @@ public class CmdRunner
 
     public async Task RunSteamCmd(string workshopId, string appId)
     {
-        SteamCmdDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Padma", "SteamCMD");
+        SteamCmdDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Padma", "SteamCMD");
         SteamCmdFilePath = Path.Combine(SteamCmdDirPath, "steamcmd.sh");
         DownloadPath = _folderPicker.SelectedPath;
         try
@@ -104,7 +104,6 @@ public class CmdRunner
                     retryCount++;
                     if (retryCount < MaxRetries)
                     {
-                        await LogAsync($"Timeout, retrying in {RetryDelaySeconds} seconds");
                         await Task.Delay(TimeSpan.FromSeconds(RetryDelaySeconds));
                     }
                 }
@@ -168,6 +167,8 @@ public class CmdRunner
 
         process.ErrorDataReceived += async (sender, e) =>
         {
+            if (e.Data != null && e.Data.Contains($"Downloading item  ...ERROR! Timeout downloading item"))
+                await LogAsync($"Timeout, waiting to resume the download.");
             if (!string.IsNullOrEmpty(e.Data))
             {
                 await LogAsync($"Error: {e.Data}");
@@ -194,6 +195,7 @@ public class CmdRunner
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
+        await process.WaitForExitAsync();
 
         await Task.WhenAny(tcs.Task, Task.Delay(-1, cancellationToken));
 
@@ -203,7 +205,7 @@ public class CmdRunner
             throw new OperationCanceledException("Download operation timed out");
         }
 
-        await LogAsync($"Process exited with code {process.ExitCode}");
+        await LogAsync($"SteamCmd exited with code {process.ExitCode}");
         Success = process.ExitCode == 0;
     }
 

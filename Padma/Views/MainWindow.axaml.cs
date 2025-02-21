@@ -38,7 +38,7 @@ namespace Padma.Views
                 stellarisAutoInstall
             );
             var historyViewModel = new HistoryViewModel(saveHistory, homeViewModel);
-            var settingsViewModel = new SettingsViewModel(saveHistory, folderpicker);
+            var settingsViewModel = new SettingsViewModel(saveHistory, folderpicker, homeViewModel);
 
             return new MainWindowViewModel(
                 supportedGamesViewModel,

@@ -37,4 +37,13 @@
     <ItemGroup>
         <AdditionalFiles Include="Styles\HomeViewStlyes.axaml"/>
     </ItemGroup>
+
+    <ItemGroup>
+      <None Update="LiteDB\history.db">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="LiteDB\list_supported_games.db">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
 </Project>

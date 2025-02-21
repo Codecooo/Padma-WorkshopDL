@@ -28,7 +28,7 @@ public class FolderPicker
     {
         try
         {
-            var defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Padma");
+            var defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Padma");
             var settings = JObject.Parse(File.ReadAllText(_settingsPath));
             var downloadPath = settings["download_path"]?.ToString();
             
@@ -38,7 +38,7 @@ public class FolderPicker
         catch
         {
             // Fallback to default if settings file can't be read
-            SelectedPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Padma");
+            SelectedPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Padma");
             FolderPathView = Path.Combine(SelectedPath, "steamapps", "workshop", "content");
         }
     }
