@@ -13,7 +13,6 @@ public class ThumbnailLoader
     {
         // Initialize the HttpClient in the constructor
         _httpClient = new HttpClient();
-        LoadThumbnail("");
     }
 
     // Property for the thumbnail
@@ -24,8 +23,6 @@ public class ThumbnailLoader
     {
         try
         {
-            // if (string.IsNullOrEmpty(url))
-            //     url = "https://static.wikia.nocookie.net/logopedia/images/f/f7/Steam_Workshop_2011.png/revision/latest?cb=20220827024345";
             if (LogAsync is not null)
                 await LogAsync($"Loading thumbnail from {url}");
             var response = await _httpClient.GetAsync(url);

@@ -13,6 +13,14 @@
         <Setter Property="CornerRadius" Value="30" />
         <Setter Property="Padding" Value="7,2" />
     </Style>
+    <Style Selector="Button.Small:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#023020" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="Button.Small:disabled /template/ ContentPresenter">
+        <Setter Property="Background" Value="#023020" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
     <Style Selector="TextBox.ConsoleLog:pointerover /template/ Border">
         <Setter Property="Background" Value="#1B1212" />
     </Style>
@@ -27,13 +35,13 @@
     </Style>
     <Style Selector="TextBox.HistoryUrl">
         <Setter Property="Background" Value="{DynamicResource ItemsDarkBrush}" />
-        <Setter Property="BorderThickness" Value="0"></Setter>
-        <Setter Property="BorderBrush" Value="{DynamicResource ItemsDarkBrush}"></Setter>
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ItemsDarkBrush}" />
     </Style>
     <Style Selector="Button.ConfirmButton">
-        <Setter Property="BorderThickness" Value="0"></Setter>
-        <Setter Property="Padding" Value="0"></Setter>
-        <Setter Property="Background" Value="{DynamicResource MidnightBlueBrush}"></Setter>
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="{DynamicResource MidnightBlueBrush}" />
     </Style>
     <Style Selector="ToggleButton">
         <Style Selector="^:checked /template/ ContentPresenter#PART_ContentPresenter">
@@ -51,12 +59,5 @@
     </Style>
     <Style Selector="ToggleButton:unchecked Image.Console-unchecked">
         <Setter Property="IsVisible" Value="True" />
-    </Style>
-    <Style Selector="Border.DownloadStatus">
-        <Setter Property="Transitions">
-            <Transitions>
-                <DoubleTransition Property="Height" Duration="0:0:0.5" Easing="QuadraticEaseIn"></DoubleTransition>
-            </Transitions>
-        </Setter>
     </Style>
 </Styles>

@@ -1,32 +1,33 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Padma.Services;
 
 public class CmdRunner
 {
-    private readonly FolderPicker _folderPicker;
-    public bool Success;
-    public string SteamCmdDirPath = string.Empty;
-    public string SteamCmdFilePath = string.Empty;
-    public string DownloadPath = string.Empty;
-
     private const int MaxRetries = 6;
     private const int RetryDelaySeconds = 10;
     private const int DownloadTimeoutMinutes = 30;
-    public event Func<string, Task>? LogAsync;
+    private readonly FolderPicker _folderPicker;
+    public string DownloadPath = string.Empty;
+    public string SteamCmdDirPath = string.Empty;
+    public string SteamCmdFilePath = string.Empty;
+    public bool Success;
 
     public CmdRunner(FolderPicker folderPicker)
     {
         _folderPicker = folderPicker;
     }
 
+    public event Func<string, Task>? LogAsync;
+
     public async Task RunSteamCmd(string workshopId, string appId)
     {
-        SteamCmdDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Padma", "SteamCMD");
+        SteamCmdDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Padma", "SteamCMD");
         SteamCmdFilePath = Path.Combine(SteamCmdDirPath, "steamcmd.sh");
         DownloadPath = _folderPicker.SelectedPath;
         try
@@ -57,9 +58,9 @@ public class CmdRunner
 
     public async Task SteamCmdDownloader()
     {
-        string command =
+        var command =
             $"cd {SteamCmdDirPath} && curl -qL \"https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz\" | tar zxvf - && chmod +x steamcmd.sh";
-        string arguments = $"-c \"{command}\"";
+        var arguments = $"-c \"{command}\"";
         using var cts = new CancellationTokenSource();
         await LogAsync("Installing steamcmd..");
         try
@@ -77,18 +78,17 @@ public class CmdRunner
     {
         int retryCount = 0;
         bool downloadComplete = false;
+        bool timeoutErrorReceived = false;
 
-        while (!downloadComplete && retryCount < MaxRetries)
+        do
         {
             using var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromMinutes(DownloadTimeoutMinutes));
 
             try
             {
-                string arguments =
+                var arguments =
                     $"-c \"\\\"{SteamCmdFilePath}\\\" +force_install_dir \\\"{DownloadPath}\\\" +login anonymous +workshop_download_item {appId} {workshopId} +quit\"";
-
-                await LogAsync($"Attempt {retryCount + 1} of {MaxRetries}");
 
                 var downloadTask = RunBash(arguments, cts.Token);
                 await downloadTask;
@@ -97,22 +97,16 @@ public class CmdRunner
                 if (Success)
                 {
                     downloadComplete = true;
+                    timeoutErrorReceived = false;
                     await LogAsync("Download completed successfully");
-                }
-                else
-                {
-                    retryCount++;
-                    if (retryCount < MaxRetries)
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(RetryDelaySeconds));
-                    }
                 }
             }
             catch (OperationCanceledException)
             {
+                timeoutErrorReceived = true;
                 await LogAsync("Download timed out");
                 retryCount++;
-                if (retryCount < MaxRetries)
+                if (retryCount < MaxRetries && timeoutErrorReceived)
                 {
                     await LogAsync($"Waiting {RetryDelaySeconds} seconds before retry...");
                     await Task.Delay(TimeSpan.FromSeconds(RetryDelaySeconds));
@@ -120,15 +114,10 @@ public class CmdRunner
             }
             catch (Exception ex)
             {
+                timeoutErrorReceived = false;
                 await LogAsync($"Error during download: {ex.Message}");
-                retryCount++;
-                if (retryCount < MaxRetries)
-                {
-                    await LogAsync($"Waiting {RetryDelaySeconds} seconds before retry...");
-                    await Task.Delay(TimeSpan.FromSeconds(RetryDelaySeconds));
-                }
             }
-        }
+        } while (!downloadComplete && retryCount < MaxRetries && timeoutErrorReceived);
 
         if (!downloadComplete)
         {
@@ -158,21 +147,13 @@ public class CmdRunner
             {
                 await LogAsync($"Output: {e.Data}");
                 // Look for progress indicators in the output
-                if (e.Data.Contains("Success. Downloaded"))
-                {
-                    Success = true;
-                }
+                if (e.Data.Contains("Success. Downloaded")) Success = true;
             }
         };
 
         process.ErrorDataReceived += async (sender, e) =>
         {
-            if (e.Data != null && e.Data.Contains($"Downloading item  ...ERROR! Timeout downloading item"))
-                await LogAsync($"Timeout, waiting to resume the download.");
-            if (!string.IsNullOrEmpty(e.Data))
-            {
-                await LogAsync($"Error: {e.Data}");
-            }
+            if (!string.IsNullOrEmpty(e.Data)) await LogAsync($"Error: {e.Data}");
         };
 
         process.Exited += (sender, args) => { tcs.TrySetResult(true); };
@@ -181,10 +162,7 @@ public class CmdRunner
         {
             try
             {
-                if (!process.HasExited)
-                {
-                    process.Kill();
-                }
+                if (!process.HasExited) process.Kill();
             }
             catch (Exception ex)
             {
@@ -206,7 +184,6 @@ public class CmdRunner
         }
 
         await LogAsync($"SteamCmd exited with code {process.ExitCode}");
-        Success = process.ExitCode == 0;
     }
 
 
@@ -214,10 +191,7 @@ public class CmdRunner
     {
         Success = false;
         await LogAsync("Killing steamcmd...");
-        foreach (var process in Process.GetProcessesByName("steamcmd"))
-        {
-            process.Kill();
-        }
+        foreach (var process in Process.GetProcessesByName("steamcmd")) process.Kill();
         await LogAsync("Download has been canceled");
     }
 }

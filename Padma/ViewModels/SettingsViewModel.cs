@@ -2,24 +2,24 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
-using Padma.Models;
-using ReactiveUI;
-using Newtonsoft.Json.Linq;
-using Padma.Services;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Padma.Models;
+using Padma.Services;
+using ReactiveUI;
 
 namespace Padma.ViewModels;
 
 public partial class SettingsViewModel : ReactiveObject
 {
-    private readonly SaveHistory _saveHistory;
+    private readonly string _appSettingsPath;
     private readonly FolderPicker _folderPicker;
     private readonly HomeViewModel _homeViewModel;
-    private string _folderPathView;
-    private bool _disableStellarisInstallChecked;
+    private readonly SaveHistory _saveHistory;
+    private readonly JObject? _settings;
     private bool _disableHistoryChecked;
-    private readonly string _appSettingsPath;
-    private JObject? _settings;
+    private bool _disableStellarisInstallChecked;
+    private string _folderPathView;
 
     public SettingsViewModel(SaveHistory saveHistory, FolderPicker folderPicker, HomeViewModel homeViewModel)
     {
@@ -27,10 +27,11 @@ public partial class SettingsViewModel : ReactiveObject
         _folderPicker = folderPicker;
         _homeViewModel = homeViewModel;
         _folderPathView = _folderPicker.FolderPathView;
-        _appSettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Padma", "appsettings.json");
+        _appSettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Padma", "appsettings.json");
         if (!File.Exists(_appSettingsPath))
             CreateAppSettings();
-        
+
         // Read the app settings from file 
         var appSettingsContent = File.ReadAllText(_appSettingsPath);
         _settings = JObject.Parse(appSettingsContent);
@@ -39,22 +40,22 @@ public partial class SettingsViewModel : ReactiveObject
 
     private void ReadAppSettings()
     {
-        bool historyEnabled = bool.Parse(_settings["history_enabled"].ToString());
-        bool stellarisAutoEnabled = bool.Parse(_settings["auto_install_stellaris_mods"].ToString());
-        string downloadPath = _settings["download_path"].ToString();
+        var historyEnabled = bool.Parse(_settings["history_enabled"].ToString());
+        var stellarisAutoEnabled = bool.Parse(_settings["auto_install_stellaris_mods"].ToString());
+        var downloadPath = _settings["download_path"].ToString();
 
         if (!historyEnabled)
         {
             DisableHistoryChecked = true;
             _saveHistory.HistoryEnabled = false;
         }
-        
+
         if (!stellarisAutoEnabled)
         {
             DisableStellarisInstallChecked = true;
             _homeViewModel.StellarisAutoInstallEnabled = false;
         }
-        
+
         if (downloadPath != "default")
         {
             _folderPicker.UpdatePaths(downloadPath);
@@ -82,7 +83,7 @@ public partial class SettingsViewModel : ReactiveObject
         _settings["history_enabled"] = _saveHistory.HistoryEnabled;
         File.WriteAllText(_appSettingsPath, _settings.ToString());
     }
-    
+
     [RelayCommand]
     public void DisableStellarisAutoInstallMods()
     {
@@ -90,16 +91,19 @@ public partial class SettingsViewModel : ReactiveObject
         _settings["auto_install_stellaris_mods"] = _homeViewModel.StellarisAutoInstallEnabled;
         File.WriteAllText(_appSettingsPath, _settings.ToString());
     }
-    
+
     [RelayCommand]
-    public void ClearHistory() => _saveHistory.DeleteHistory();
+    public void ClearHistory()
+    {
+        _saveHistory.DeleteHistory();
+    }
 
     [RelayCommand]
     public void ResetPadma()
     {
         _saveHistory.DeleteHistory();
-        string steamappsPath = Path.Combine(_folderPicker.SelectedPath, "steamapps");
-        string steamcmdPath = Path.Combine(_folderPicker.SelectedPath, "SteamCMD");
+        var steamappsPath = Path.Combine(_folderPicker.SelectedPath, "steamapps");
+        var steamcmdPath = Path.Combine(_folderPicker.SelectedPath, "SteamCMD");
         try
         {
             Directory.Delete(steamappsPath, true);
@@ -109,6 +113,7 @@ public partial class SettingsViewModel : ReactiveObject
         {
             Console.WriteLine(e);
         }
+
         _settings["history_enabled"] = true;
         _settings["auto_install_stellaris_mods"] = true;
         _settings["download_path"] = "default";
@@ -125,6 +130,8 @@ public partial class SettingsViewModel : ReactiveObject
         File.WriteAllText(_appSettingsPath, _settings.ToString());
         FolderPathView = _folderPicker.FolderPathView;
     }
+
+    #region ReactiveUI Public Properties
 
     public string FolderPathView
     {
@@ -143,4 +150,6 @@ public partial class SettingsViewModel : ReactiveObject
         get => _disableStellarisInstallChecked;
         set => this.RaiseAndSetIfChanged(ref _disableStellarisInstallChecked, value);
     }
+
+    #endregion
 }

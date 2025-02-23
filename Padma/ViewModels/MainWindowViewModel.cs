@@ -1,7 +1,6 @@
-﻿
-namespace Padma.ViewModels;
+﻿namespace Padma.ViewModels;
 
-public class MainWindowViewModel : ViewModelBase
+public class MainWindowViewModel
 {
     public MainWindowViewModel(
         SupportedGamesViewModel supportedGamesViewModel,

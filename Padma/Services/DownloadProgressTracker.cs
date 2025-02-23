@@ -1,25 +1,24 @@
-using ReactiveUI;
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Reactive.Linq;
+using System.Threading;
+using ReactiveUI;
 
 namespace Padma.Services;
 
 public class DownloadProgressTracker : ReactiveObject
 {
-    public event Action<int>? ProgressUpdated;
-    public long TotalSize;
-    public FileSystemWatcher? FolderWatcher;
-    public FileSystemWatcher? DownloadWatcher;
-    public long CurrentSize;
-    public Timer? ProgressDebounceTimer;
-    private string _workshopId = string.Empty;
     private string _appId = string.Empty;
-    public string DownloadFolder = string.Empty;
     private bool _isTracking;
-    
+    private string _workshopId = string.Empty;
+    public long CurrentSize;
+    public string DownloadFolder = string.Empty;
+    public FileSystemWatcher? DownloadWatcher;
+    public FileSystemWatcher? FolderWatcher;
+    public Timer? ProgressDebounceTimer;
+    public long TotalSize;
+
     public DownloadProgressTracker()
     {
         this.WhenAnyValue(x => x.AppId, x => x.WorkshopId,
@@ -39,6 +38,8 @@ public class DownloadProgressTracker : ReactiveObject
         get => _workshopId;
         set => this.RaiseAndSetIfChanged(ref _workshopId, value);
     }
+
+    public event Action<int>? ProgressUpdated;
 
     public void Reset()
     {
@@ -62,7 +63,7 @@ public class DownloadProgressTracker : ReactiveObject
     {
         if (_isTracking) Reset();
         _isTracking = true;
-        
+
         DownloadFolder = Path.Combine(DownloadFolder, "steamapps", "workshop", "downloads");
 
         if (!Directory.Exists(DownloadFolder))
@@ -95,7 +96,7 @@ public class DownloadProgressTracker : ReactiveObject
     private void AttachDownloadWatcher(string folderPath)
     {
         CurrentSize = Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories)
-                        .Sum(file => new FileInfo(file).Length);
+            .Sum(file => new FileInfo(file).Length);
 
         DownloadWatcher = new FileSystemWatcher(folderPath)
         {
@@ -124,19 +125,16 @@ public class DownloadProgressTracker : ReactiveObject
         try
         {
             if (!_isTracking) return;
-            
+
             if (!string.IsNullOrWhiteSpace(DownloadFolder) && Directory.Exists(DownloadFolder))
             {
-                long newSize = Directory.GetFiles(DownloadFolder, "*", SearchOption.AllDirectories)
+                var newSize = Directory.GetFiles(DownloadFolder, "*", SearchOption.AllDirectories)
                     .Sum(file => new FileInfo(file).Length);
                 CurrentSize = newSize;
-                int downloadPercentage = (int)(Math.Round((double)CurrentSize / TotalSize, 2) * 100);
-                
-                if (downloadPercentage >= 100)
-                {
-                    _isTracking = false;
-                }
-                
+                var downloadPercentage = (int)(Math.Round((double)CurrentSize / TotalSize, 2) * 100);
+
+                if (downloadPercentage >= 100) _isTracking = false;
+
                 ProgressUpdated?.Invoke(downloadPercentage);
             }
         }

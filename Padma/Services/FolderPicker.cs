@@ -1,44 +1,46 @@
-using System.Threading.Tasks;
 using System;
-using Avalonia;
-using Avalonia.Platform.Storage;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
-using Newtonsoft.Json.Linq;
+using System.Linq;
+using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-
+using Avalonia.Platform.Storage;
+using Newtonsoft.Json.Linq;
 
 namespace Padma.Services;
 
 public class FolderPicker
 {
     private readonly string _settingsPath = "/home/lagita/RiderProjects/Padma/Padma/appsettings.json";
-    public string SelectedPath { get; private set; }
-    public string FolderPathView { get; private set; }
-    public event Func<string, Task>? LogAsync;
 
     public FolderPicker()
     {
         InitializeFromSettings();
     }
 
+    public string SelectedPath { get; private set; }
+    public string FolderPathView { get; private set; }
+    public event Func<string, Task>? LogAsync;
+
     private void InitializeFromSettings()
     {
         try
         {
-            var defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Padma");
+            var defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Padma");
             var settings = JObject.Parse(File.ReadAllText(_settingsPath));
             var downloadPath = settings["download_path"]?.ToString();
-            
+
             SelectedPath = downloadPath == "default" ? defaultPath : downloadPath ?? defaultPath;
             FolderPathView = Path.Combine(SelectedPath, "steamapps", "workshop", "content");
         }
         catch
         {
             // Fallback to default if settings file can't be read
-            SelectedPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Padma");
+            SelectedPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Padma");
             FolderPathView = Path.Combine(SelectedPath, "steamapps", "workshop", "content");
         }
     }
@@ -48,7 +50,7 @@ public class FolderPicker
         SelectedPath = newSelectedPath;
         FolderPathView = Path.Combine(SelectedPath, "steamapps", "workshop", "content");
     }
-    
+
     public async Task PickFolder()
     {
         try
@@ -65,6 +67,7 @@ public class FolderPicker
             await LogAsync(e.Message);
         }
     }
+
     public async Task OpenFolder(string folderPath)
     {
         try
@@ -76,14 +79,14 @@ public class FolderPicker
             await LogAsync(e.Message);
         }
     }
-    
+
     private async Task<IReadOnlyList<IStorageFolder>?> DoOpenFilePickerAsync()
     {
         if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
             desktop.MainWindow?.StorageProvider is not { } provider)
         {
             await LogAsync("Missing StorageProvider instance.");
-            return null; 
+            return null;
         }
 
         var folder = await provider.OpenFolderPickerAsync(new FolderPickerOpenOptions

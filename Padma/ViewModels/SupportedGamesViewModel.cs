@@ -11,8 +11,8 @@ public class SupportedGamesViewModel : ReactiveObject
     private readonly SupportedGames _db;
     private ObservableCollection<SupportedGamesData> _filteredGames = new();
     private ObservableCollection<SupportedGamesData> _games = new();
-    private string? _searchText;
     private bool _noGamesFound;
+    private string? _searchText;
 
     public SupportedGamesViewModel(SupportedGames db)
     {
@@ -26,29 +26,11 @@ public class SupportedGamesViewModel : ReactiveObject
             .Subscribe(_ => NoGamesFound = !FilteredGames.Any());
     }
 
-    public ObservableCollection<SupportedGamesData> Games
-    {
-        get => _games;
-        set => this.RaiseAndSetIfChanged(ref _games, value);
-    }
-
-    public ObservableCollection<SupportedGamesData> FilteredGames
-    {
-        get => _filteredGames;
-        set => this.RaiseAndSetIfChanged(ref _filteredGames, value);
-    }
-
-    public string? SearchText
-    {
-        get => _searchText;
-        set => this.RaiseAndSetIfChanged(ref _searchText, value);
-    }
-
     private void LoadGames()
     {
         var allGames = _db.GetAllGames().ToList();
         Games = new ObservableCollection<SupportedGamesData>(allGames);
-        FilteredGames = new ObservableCollection<SupportedGamesData>(allGames); // Initialize with all games
+        FilteredGames = new ObservableCollection<SupportedGamesData>(allGames);
     }
 
     private void SearchGames(string? searchText)
@@ -70,10 +52,31 @@ public class SupportedGamesViewModel : ReactiveObject
         }
     }
 
+    #region ReactiveUI Public Properties
+
+    public ObservableCollection<SupportedGamesData> Games
+    {
+        get => _games;
+        set => this.RaiseAndSetIfChanged(ref _games, value);
+    }
+
+    public ObservableCollection<SupportedGamesData> FilteredGames
+    {
+        get => _filteredGames;
+        set => this.RaiseAndSetIfChanged(ref _filteredGames, value);
+    }
+
+    public string? SearchText
+    {
+        get => _searchText;
+        set => this.RaiseAndSetIfChanged(ref _searchText, value);
+    }
+
     public bool NoGamesFound
     {
         get => _noGamesFound;
         set => this.RaiseAndSetIfChanged(ref _noGamesFound, value);
     }
-    
+
+    #endregion
 }

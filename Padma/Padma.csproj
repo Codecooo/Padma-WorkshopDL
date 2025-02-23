@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.2.3" />
+        <PackageReference Include="Avalonia" Version="11.2.3"/>
         <PackageReference Include="Avalonia.Desktop" Version="11.2.1"/>
         <PackageReference Include="Avalonia.Svg.Skia" Version="11.2.0.2"/>
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.1"/>
@@ -39,11 +39,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="LiteDB\history.db">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="LiteDB\list_supported_games.db">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        <None Update="LiteDB\history.db">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </None>
+        <None Update="LiteDB\list_supported_games.db">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 </Project>

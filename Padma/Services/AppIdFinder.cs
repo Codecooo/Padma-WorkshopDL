@@ -1,40 +1,38 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using System.Text.RegularExpressions;
 
 namespace Padma.Services;
 
 public class AppIdFinder
 {
     private readonly DownloadProgressTracker _downloadProgressTracker;
-    public string AppId { get; private set; }
-    public string WorkshopId { get; private set; } = string.Empty;
-    public string ModTitle { get; private set; }
-    public string ThumbnailUrl { get; private set; }
     private double _fileSize;
-    public long FileSizeBytes { get; private set; }
-    public string FileSizeInfo { get; private set; }
-    public event Func<string, Task>? LogAsync;
 
     // Proper constructor injection
     public AppIdFinder(DownloadProgressTracker downloadProgressTracker)
     {
         _downloadProgressTracker = downloadProgressTracker;
-    }   
-    
+    }
+
+    public string AppId { get; private set; }
+    public string WorkshopId { get; private set; } = string.Empty;
+    public string ModTitle { get; private set; }
+    public string ThumbnailUrl { get; private set; }
+    public long FileSizeBytes { get; private set; }
+    public string FileSizeInfo { get; private set; }
+    public event Func<string, Task>? LogAsync;
+
     public async Task ExtractWorkshopId(string workshopUrl)
     {
         // Match a numeric ID at the end of the URL path
         var regex = new Regex(@"id=(\d+)");
         var match = regex.Match(workshopUrl);
 
-        if (match.Success)
-        {
-            WorkshopId = match.Groups[1].Value; // Assign first
-        }
+        if (match.Success) WorkshopId = match.Groups[1].Value; // Assign first
         if (string.IsNullOrEmpty(WorkshopId))
         {
             await LogAsync("Invalid Workshop ID.");
@@ -43,7 +41,7 @@ public class AppIdFinder
 
         await LogAsync($"Extracted Workshop ID: {WorkshopId}");
     }
-    
+
     public async Task AppFinder()
     {
         using (var client = new HttpClient())
@@ -97,6 +95,7 @@ public class AppIdFinder
                         {
                             FileSizeInfo = $"{_fileSize:F1} MB";
                         }
+
                         await LogAsync($"Found AppId {AppId} for workshop item {WorkshopId}");
                     }
                     else
@@ -118,7 +117,7 @@ public class AppIdFinder
             }
         }
     }
-    
+
     public void SetValuesOfProgressTracker()
     {
         _downloadProgressTracker.AppId = AppId;

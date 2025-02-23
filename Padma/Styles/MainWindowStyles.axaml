@@ -31,4 +31,7 @@
         <Setter Property="Background" Value="#161C1E" />
         <Setter Property="BorderThickness" Value="0" />
     </Style>
+    <Style Selector="Image.TabImage:pointerover">
+        <Setter Property="Opacity" Value="0.4" />
+    </Style>
 </Styles>

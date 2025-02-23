@@ -12,61 +12,51 @@
         xmlns:views="clr-namespace:Padma.Views"
         xmlns:viewModels="clr-namespace:Padma.ViewModels"
         x:Class="Padma.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/logo.png"
         Title="Padma"
         x:DataType="viewModels:MainWindowViewModel">
     <!-- Sidebar Menu -->
     <TabControl TabStripPlacement="Left">
-      <!-- Use a DockPanel to arrange headers -->
-      <TabControl.ItemsPanel>
-        <ItemsPanelTemplate>
-          <DockPanel LastChildFill="False" Width="40" />
-        </ItemsPanelTemplate>
-      </TabControl.ItemsPanel>
-      <TabControl.Resources>
-        
-        <!-- Header templates -->
-        <DataTemplate x:Key="HomeTemplate">
-          <StackPanel Orientation="Vertical" Margin="5">
-            <Svg Path="/Assets/home.svg" Width="26" />
-            <TextBlock FontSize="10" Text="Home" Foreground="Wheat" IsVisible="False" />
-          </StackPanel>
-        </DataTemplate>
-        <DataTemplate x:Key="HistoryTemplate">
-          <StackPanel Orientation="Vertical" Margin="5">
-            <Image Source="/Assets/history.png" Width="26" />
-            <TextBlock FontSize="10" Text="History" Foreground="Wheat" IsVisible="False" />
-          </StackPanel>
-        </DataTemplate>
-        <DataTemplate x:Key="GamesTemplate">
-          <StackPanel Orientation="Vertical" Margin="5">
-            <Image Source="/Assets/games.png" Width="26" />
-            <TextBlock FontSize="10" Text="Games" Foreground="Wheat" IsVisible="False" />
-          </StackPanel>
-        </DataTemplate>
-        <DataTemplate x:Key="SettingsTemplate">
-          <StackPanel Orientation="Vertical" Margin="5">
-            <Svg Path="/Assets/settings.svg" Width="26" />
-            <TextBlock FontSize="10" Text="Settings" Foreground="Wheat" IsVisible="False" />
-          </StackPanel>
-        </DataTemplate>
-      </TabControl.Resources>
+        <!-- Use a DockPanel to arrange headers -->
+        <TabControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <DockPanel LastChildFill="False" Width="40" />
+            </ItemsPanelTemplate>
+        </TabControl.ItemsPanel>
+        <TabControl.Resources>
 
-      <!-- Top TabItems -->
-      <TabItem HeaderTemplate="{StaticResource HomeTemplate}" DockPanel.Dock="Top">
-        <views:HomeViews DataContext="{Binding HomeViewModel}" />
-      </TabItem>
-      <TabItem HeaderTemplate="{StaticResource HistoryTemplate}" DockPanel.Dock="Top">
-        <views:HistoryViews DataContext="{Binding HistoryViewModel}" />
-      </TabItem>
-      <TabItem HeaderTemplate="{StaticResource GamesTemplate}" DockPanel.Dock="Top">
-        <views:SupportedGamesViews DataContext="{Binding SupportedGamesViewModel}" />
-      </TabItem>
+            <!-- Header templates -->
+            <DataTemplate x:Key="HomeTemplate">
+                <Image Margin="5" Classes="TabImage" Source="/Assets/home.png" Width="26" />
+            </DataTemplate>
+            <DataTemplate x:Key="HistoryTemplate">
+                <Image Margin="5" Classes="TabImage" Source="/Assets/history.png" Width="26" />
+            </DataTemplate>
+            <DataTemplate x:Key="GamesTemplate">
+                <Image Margin="5" Classes="TabImage" Source="/Assets/games.png" Width="26" />
+            </DataTemplate>
+            <DataTemplate x:Key="SettingsTemplate">
+                <Image Margin="5" Classes="TabImage" Source="/Assets/settings.png" Width="26" />
+            </DataTemplate>
+        </TabControl.Resources>
 
-      <!-- Bottom TabItem -->
-      <TabItem HeaderTemplate="{StaticResource SettingsTemplate}" DockPanel.Dock="Bottom">
-        <views:SettingsViews DataContext="{Binding SettingsViewModel}" />
-      </TabItem>
+        <!-- TabItems -->
+        <TabItem ToolTip.Tip="Home" ToolTip.Placement="Right" ToolTip.VerticalOffset="0" ToolTip.ShowDelay="240"
+                 HeaderTemplate="{StaticResource HomeTemplate}" DockPanel.Dock="Top">
+            <views:HomeViews DataContext="{Binding HomeViewModel}" />
+        </TabItem>
+        <TabItem ToolTip.Tip="Download History" ToolTip.Placement="Right" ToolTip.ShowDelay="240"
+                 ToolTip.VerticalOffset="0" HeaderTemplate="{StaticResource HistoryTemplate}" DockPanel.Dock="Top">
+            <views:HistoryViews DataContext="{Binding HistoryViewModel}" />
+        </TabItem>
+        <TabItem ToolTip.Tip="Supported Games" ToolTip.Placement="Right" ToolTip.ShowDelay="240"
+                 ToolTip.VerticalOffset="0" HeaderTemplate="{StaticResource GamesTemplate}" DockPanel.Dock="Top">
+            <views:SupportedGamesViews DataContext="{Binding SupportedGamesViewModel}" />
+        </TabItem>
+        <TabItem ToolTip.Tip="Settings" ToolTip.Placement="Right" ToolTip.ShowDelay="240" ToolTip.VerticalOffset="0"
+                 HeaderTemplate="{StaticResource SettingsTemplate}" DockPanel.Dock="Bottom">
+            <views:SettingsViews DataContext="{Binding SettingsViewModel}" />
+        </TabItem>
     </TabControl>
     <Design.DataContext>
         <vm:MainWindowViewModel />

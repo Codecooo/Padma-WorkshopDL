@@ -6,9 +6,9 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Microsoft.Extensions.DependencyInjection;
 using Padma.Models;
 using Padma.Services;
-using Microsoft.Extensions.DependencyInjection;
 using Padma.ViewModels;
 
 namespace Padma.Views;
@@ -27,7 +27,7 @@ public partial class HomeViews : UserControl
 
         // Get the ViewModel but don't set DataContext yet
         _homeViewModel = App.ServiceProvider.GetRequiredService<HomeViewModel>();
-        
+
         SetupEventHandlers();
         AutoScrollLogs();
     }
@@ -35,41 +35,19 @@ public partial class HomeViews : UserControl
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
-        
-        Console.WriteLine($"OnDataContextChanged called, current DataContext type: {DataContext?.GetType().Name}");
-        
+
         // If DataContext is null or not our ViewModel, set it
-        if (DataContext is not HomeViewModel)
-        {
-            Console.WriteLine("Setting DataContext to HomeViewModel");
-            DataContext = _homeViewModel;
-        }
+        if (DataContext is not HomeViewModel) DataContext = _homeViewModel;
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        
-        Console.WriteLine($"OnAttachedToVisualTree - Before check, DataContext type: {DataContext?.GetType().Name}");
-        
-        // Double check DataContext here too
-        if (DataContext is not HomeViewModel && _homeViewModel != null)
-        {
-            Console.WriteLine("Resetting DataContext in OnAttachedToVisualTree");
-            DataContext = _homeViewModel;
-        }
 
-        if (DataContext is HomeViewModel vm)
-        {
-            Console.WriteLine($"OnAttachedToVisualTree - WorkshopTitle: {vm.WorkshopTitle}");
-            Console.WriteLine($"OnAttachedToVisualTree - IsEnabled: {vm.IsEnabled}");
-        }
-        else
-        {
-            Console.WriteLine("OnAttachedToVisualTree - DataContext is not HomeViewModel");
-        }
+        // Double check DataContext here too
+        if (DataContext is not HomeViewModel && _homeViewModel != null) DataContext = _homeViewModel;
     }
-    
+
     private void SetupEventHandlers()
     {
         _runner.LogAsync += UiLogAsync;
@@ -81,11 +59,15 @@ public partial class HomeViews : UserControl
     }
 
     private void HideConsole_Hovered(object? sender, PointerEventArgs e)
-        => HideConsoleHover.IsVisible = true;
-    
+    {
+        HideConsoleHover.IsVisible = true;
+    }
+
     private void HideConsole_NotHovered(object? sender, PointerEventArgs e)
-       => HideConsoleHover.IsVisible = false;
-    
+    {
+        HideConsoleHover.IsVisible = false;
+    }
+
     private void ChangeLabelsBasedOnCheck()
     {
         if (HideOrShowConsole.IsChecked ?? true)
@@ -107,7 +89,7 @@ public partial class HomeViews : UserControl
             .Subscribe(_ =>
             {
                 // Set the caret index to the end of the text
-                logoutput.CaretIndex = logoutput.Text.Length;
+                if (logoutput.Text != null) logoutput.CaretIndex = logoutput.Text.Length;
             });
     }
 
@@ -120,7 +102,6 @@ public partial class HomeViews : UserControl
             ChangeLabelsBasedOnCheck();
         }
     }
-    
 
 
     #region Private fields
@@ -133,5 +114,4 @@ public partial class HomeViews : UserControl
     private readonly SaveHistory _history;
 
     #endregion
-
 }

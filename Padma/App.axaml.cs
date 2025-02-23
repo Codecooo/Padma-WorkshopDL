@@ -23,20 +23,20 @@ public class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-            var services = new ServiceCollection();
-            ConfigureServices(services);
-            ServiceProvider = services.BuildServiceProvider();
+        var services = new ServiceCollection();
+        ConfigureServices(services);
+        ServiceProvider = services.BuildServiceProvider();
 
-            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-            {
-                DisableAvaloniaDataAnnotationValidation();
-                
-                // Create a single instance of MainWindow
-                var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-                desktop.MainWindow = mainWindow;
-            }
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            DisableAvaloniaDataAnnotationValidation();
 
-            base.OnFrameworkInitializationCompleted();
+            // Create a single instance of MainWindow
+            var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+            desktop.MainWindow = mainWindow;
+        }
+
+        base.OnFrameworkInitializationCompleted();
     }
 
     private static void ConfigureServices(IServiceCollection services)
@@ -49,7 +49,7 @@ public class App : Application
         services.AddSingleton<ThumbnailLoader>();
         services.AddSingleton<FolderPicker>();
         services.AddSingleton<StellarisAutoInstall>();
-    
+
         // Register AppIdFinder after DownloadProgressTracker
         services.AddSingleton<AppIdFinder>();
 
@@ -58,7 +58,7 @@ public class App : Application
         services.AddSingleton<HistoryViewModel>();
         services.AddSingleton<HomeViewModel>();
         services.AddSingleton<SettingsViewModel>();
-    
+
         // Register MainWindowViewModel last
         services.AddSingleton<MainWindowViewModel>();
         services.AddTransient<MainWindow>();
@@ -69,9 +69,6 @@ public class App : Application
         var dataValidationPluginsToRemove =
             BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
-        foreach (var plugin in dataValidationPluginsToRemove)
-        {
-            BindingPlugins.DataValidators.Remove(plugin);
-        }
+        foreach (var plugin in dataValidationPluginsToRemove) BindingPlugins.DataValidators.Remove(plugin);
     }
 }

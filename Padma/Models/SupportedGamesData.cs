@@ -1,36 +1,37 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LiteDB;
 
 namespace Padma.Models;
 
 public class SupportedGamesData
 {
-    [BsonId]
+    [BsonId] 
     public int Id { get; set; }
     public string AppId { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
 }
 
-public class SupportedGames : IDisposable
+public class SupportedGames
 {
-    private readonly LiteDatabase _db;
-
     public SupportedGames()
     {
-         _db = new LiteDatabase(Path.Combine(AppContext.BaseDirectory, "LiteDB", "list_supported_games.db"));
-    }
-
-    public ILiteCollection<SupportedGamesData> SupportData => _db.GetCollection<SupportedGamesData>("supported_games");
-
-    public void Dispose()
-    {
-        _db.Dispose();
+        string dbPath = Path.Combine(AppContext.BaseDirectory, "data", "list_supported_games.db");
+        string targetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Padma", "data", "list_supported_games.db");
+        
+        if (!File.Exists(targetPath))
+            File.Move(dbPath, targetPath);
     }
 
     public IEnumerable<SupportedGamesData> GetAllGames()
     {
-        return SupportData.FindAll();
+        string targetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Padma", "data", "list_supported_games.db");
+        using (var db = new LiteDatabase(targetPath))
+        {
+            var supportedGamesData = db.GetCollection<SupportedGamesData>("supported_games");
+            return supportedGamesData.FindAll().ToList();
+        }
     }
 }

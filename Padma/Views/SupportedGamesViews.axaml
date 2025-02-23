@@ -9,10 +9,13 @@
     <Grid RowDefinitions="Auto, Auto, Auto, *" Background="#070A0B">
         <Label Grid.Row="0" FontSize="28" VerticalAlignment="Top" HorizontalAlignment="Center"
                Content="Supported Games" Foreground="Gray" />
-            <TextBox Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding SearchText}" Margin="5"
-                     Width="550" Height="30" AcceptsReturn="True"
-                     Watermark="Enter your games name if your games are supported" />
-        <TextBlock Grid.Row="3" VerticalAlignment="Center" IsVisible="{Binding NoGamesFound}" Text="Nothing to show here" Foreground="White" Opacity="0.3" FontSize="26" HorizontalAlignment="Center"/>                
+        <TextBox Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding SearchText}"
+                 Margin="5"
+                 Width="550" Height="30" AcceptsReturn="True"
+                 Watermark="Enter your games name if your games are supported" />
+        <TextBlock Grid.Row="3" VerticalAlignment="Center" IsVisible="{Binding NoGamesFound}"
+                   Text="Nothing to show here" Foreground="White" Opacity="0.3" FontSize="26"
+                   HorizontalAlignment="Center" />
         <ScrollViewer Grid.Row="3" HorizontalScrollBarVisibility="Disabled">
             <StackPanel>
                 <ItemsControl ItemsSource="{Binding FilteredGames}">
