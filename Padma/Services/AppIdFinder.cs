@@ -12,7 +12,6 @@ public class AppIdFinder
     private readonly DownloadProgressTracker _downloadProgressTracker;
     private double _fileSize;
 
-    // Proper constructor injection
     public AppIdFinder(DownloadProgressTracker downloadProgressTracker)
     {
         _downloadProgressTracker = downloadProgressTracker;
