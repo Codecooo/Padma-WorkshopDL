@@ -21,16 +21,6 @@
         <Setter Property="Background" Value="#023020" />
         <Setter Property="Foreground" Value="White" />
     </Style>
-    <Style Selector="SplitButton:pressed /template/ Grid">
-        <Setter Property="Background" Value="#28282B" />
-    </Style>
-    <Style Selector="SplitButton:pointerover /template/ Button#PART_SecondaryButton /template/ TextBlock">
-        <Setter Property="Foreground" Value="White" />
-    </Style>
-    <Style Selector="SplitButton:pointerover">
-        <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="0" />
-    </Style>
     <Style Selector="TextBox.ConsoleLog:pointerover /template/ Border">
         <Setter Property="Background" Value="#1B1212" />
     </Style>
@@ -80,7 +70,7 @@
     <Style Selector="Button.OpenFolder">
         <Setter Property="Background" Value="Transparent" />
     </Style>
-    <Style Selector="Button.OpenFolder:pressed">
+    <Style Selector="Button.OpenFolder:disabled /template/ ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
     </Style>
     <Style Selector="Button.OpenFolder:pointerover /template/ ContentPresenter">
