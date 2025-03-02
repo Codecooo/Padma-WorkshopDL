@@ -15,12 +15,12 @@
                HorizontalAlignment="Center" />
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Orientation="Horizontal">
             <TextBox Text="{Binding SearchText}" Margin="5"
-                     Width="550" Height="30" AcceptsReturn="True"
+                     Width="450" Height="30" AcceptsReturn="True"
                      Watermark="Search Downloads" />
-            <SplitButton Foreground="White" Content="Sort" Background="{DynamicResource ItemsDarkBrush}">
+            <SplitButton Foreground="White" Content="Most Recent" Command="{Binding SortRecentDownloadsCommand}"
+                         Background="{DynamicResource ItemsDarkBrush}">
                 <SplitButton.Flyout>
                     <MenuFlyout Placement="BottomEdgeAlignedLeft">
-                        <MenuItem Header="Most Recent" Command="{Binding SortRecentDownloadsCommand}" />
                         <MenuItem Header="Oldest" Command="{Binding SortOldestDownloadsCommand}" />
                         <MenuItem Header="Biggest Size" Command="{Binding SortBiggestDownloadsCommand}" />
                         <MenuItem Header="Smallest Size" Command="{Binding SortSmallestDownloadsCommand}" />
@@ -42,10 +42,10 @@
                                 <Grid RowDefinitions="Auto, Auto, Auto">
                                     <TextBlock Grid.Row="0" FontSize="13" Foreground="Wheat"
                                                Text="{Binding WorkshopTitle}" />
-                                    <Button CommandParameter="{Binding}"
+                                    <Button Classes="OpenFolder" CommandParameter="{Binding}"
                                             Command="{Binding $parent[ItemsControl].((vm:HistoryViewModel)DataContext).OpenDownloadsCommand}"
                                             ZIndex="1" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Right">
-                                        <Svg Path="/Assets/folder.svg" Width="20" Height="20" />
+                                        <Image Classes="TabImage" Source="/Assets/folder.png" Width="20" Height="20" />
                                     </Button>
                                     <TextBox Grid.Row="1" FontSize="12" Classes="HistoryUrl" IsReadOnly="True"
                                              Foreground="Wheat" Text="{Binding WorkshopUrl}" />

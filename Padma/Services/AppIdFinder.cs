@@ -42,6 +42,10 @@ public class AppIdFinder
         await LogAsync($"Extracted Workshop ID: {WorkshopId}");
     }
 
+    /// <summary>
+    ///     Find the necessary info about the workhop item through SteamWebAPI
+    ///     Calculate the file size, title, appID, and thumbnail URL
+    /// </summary>
     public async Task AppFinder()
     {
         using (var client = new HttpClient())
@@ -56,7 +60,7 @@ public class AppIdFinder
             try
             {
                 await LogAsync($"Finding AppId for workshop item {WorkshopId}...");
-                // Send the request to Steam's API
+                // Send the request to SteamWebAPI
                 var response = await client.PostAsync(
                     "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/",
                     formData
@@ -76,24 +80,28 @@ public class AppIdFinder
                     if (!string.IsNullOrWhiteSpace(appId) && !string.IsNullOrWhiteSpace(modTitle) &&
                         !string.IsNullOrWhiteSpace(thumbnailUrl) && fileSize > 0)
                     {
+                        // Assign the required information like ModTitle, AppID, thumbnail, and FileSize in bytes
                         ModTitle = modTitle;
                         AppId = appId;
                         ThumbnailUrl = thumbnailUrl;
                         FileSizeBytes = (long)fileSize;
-                        _fileSize = (double)(fileSize / 1_048_576.0);
+                        _fileSize = (double)(fileSize / 1_048_576.0); // Convert to MB
+
+                        // Calculate the filesize in bytes to readable format GB, MB or KB
                         if (Math.Floor(_fileSize) >= 1000)
                         {
                             _fileSize /= 1024;
-                            FileSizeInfo = $"{_fileSize:F1} GB";
+                            FileSizeInfo =
+                                $"{_fileSize:F1} GB"; // Calculate to GB if the integral value is larger than 1000 MB
                         }
                         else if (Math.Floor(_fileSize) < 1)
                         {
-                            FileSizeBytes /= 1024;
-                            FileSizeInfo = $"{FileSizeBytes:F1} KB";
+                            var fileSizeKb = FileSizeBytes / 1024.0;
+                            FileSizeInfo = $"{fileSizeKb:F1} KB"; // Calculate to KB if the value is less than 1 MB 
                         }
                         else
                         {
-                            FileSizeInfo = $"{_fileSize:F1} MB";
+                            FileSizeInfo = $"{_fileSize:F1} MB"; // If all conditions fail revert back to MB
                         }
 
                         await LogAsync($"Found AppId {AppId} for workshop item {WorkshopId}");
@@ -118,6 +126,10 @@ public class AppIdFinder
         }
     }
 
+    /// <summary>
+    ///     Set the value of the DownloadProgressTracker class to the appropriate information once succesfully
+    ///     retrieved all necessary info through SteamWebAPI
+    /// </summary>
     public void SetValuesOfProgressTracker()
     {
         _downloadProgressTracker.AppId = AppId;

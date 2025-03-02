@@ -6,24 +6,35 @@ using System.Threading.Tasks;
 
 namespace Padma.Services;
 
+
 public class CmdRunner
 {
     private const int MaxRetries = 6;
     private const int RetryDelaySeconds = 10;
     private const int DownloadTimeoutMinutes = 30;
     private readonly FolderPicker _folderPicker;
+    private readonly DownloadProgressTracker _downloadTracker;
+    
     public string DownloadPath = string.Empty;
     public string SteamCmdDirPath = string.Empty;
     public string SteamCmdFilePath = string.Empty;
     public bool Success;
 
-    public CmdRunner(FolderPicker folderPicker)
+    public CmdRunner(FolderPicker folderPicker, DownloadProgressTracker downloadTracker)
     {
         _folderPicker = folderPicker;
+        _downloadTracker = downloadTracker;
     }
 
     public event Func<string, Task>? LogAsync;
 
+    /// <summary>
+    /// Run steamcmd on bash, first check if the actual steamcmd is in the Padma directory if its not
+    /// it will proceed to download steamcmd, then download the mod based on the WorkshopID and AppID
+    /// If steamcmd found in the Padma directory it will send straight to download the mods
+    /// </summary>
+    /// <param name="workshopId"></param>
+    /// <param name="appId"></param>
     public async Task RunSteamCmd(string workshopId, string appId)
     {
         SteamCmdDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -46,6 +57,7 @@ public class CmdRunner
             }
             else
             {
+                // Start tracking SteamCMD installation progress
                 await SteamCmdDownloader();
                 await ModDownloader(workshopId, appId);
             }
@@ -56,6 +68,10 @@ public class CmdRunner
         }
     }
 
+    /// <summary>
+    /// Download steamcmd with bash based on official Valve instructions for linux x86-64
+    /// I could honestly do this with HTTP client but since I already have bash method might as well incorporate it
+    /// </summary>
     public async Task SteamCmdDownloader()
     {
         var command =
@@ -74,12 +90,22 @@ public class CmdRunner
         }
     }
 
+
+    /// <summary>
+    ///     Download the mods with bash for steamcmd, it provides delay if the process encounter any timeout error
+    ///     usual for large size downloads. The default is 6 max attempts, this should suffice unless the user has really
+    ///     bad internet speed or the size is abnormally large.
+    /// </summary>
+    /// <param name="workshopId"></param>
+    /// <param name="appId"></param>
     public async Task ModDownloader(string workshopId, string appId)
     {
-        int retryCount = 0;
-        bool downloadComplete = false;
-        bool timeoutErrorReceived = false;
+        var retryCount = 0;
+        var downloadComplete = false;
+        var timeoutErrorReceived = false;
 
+        // Download Mods with 6 retry attempts for timeout error and cancellationtoken if the download session is exceeding
+        // 30 minutes. Code will loop until it is either completed, exceeding 6 retry attempts or no timeout error received
         do
         {
             using var cts = new CancellationTokenSource();
@@ -126,6 +152,12 @@ public class CmdRunner
         }
     }
 
+    /// <summary>
+    ///     Run bash method used for both downloading steamcmd and running steamcmd to download mods
+    /// </summary>
+    /// <param name="arguments"></param>
+    /// <param name="cancellationToken"></param>
+    /// <exception cref="OperationCanceledException"></exception>
     private async Task RunBash(string arguments, CancellationToken cancellationToken)
     {
         using var process = new Process();

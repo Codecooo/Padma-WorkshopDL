@@ -26,8 +26,8 @@
             <StackPanel Orientation="Horizontal" Grid.Row="1">
                 <TextBox Width="640" Text="{Binding FolderPathView}" IsReadOnly="True" Classes="Small" Height="30"
                          Margin="60,0, 0,0" />
-                <Button Command="{Binding SelectFolderPathCommand}">
-                    <Svg Path="/Assets/folder.svg" Width="30" Height="30" />
+                <Button Classes="OpenFolder" Command="{Binding SelectFolderPathCommand}">
+                    <Image Classes="TabImage" Source="/Assets/folder.png" Width="30" Height="30" />
                 </Button>
             </StackPanel>
         </Grid>

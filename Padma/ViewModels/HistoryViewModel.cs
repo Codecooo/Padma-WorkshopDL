@@ -70,7 +70,7 @@ public partial class HistoryViewModel : ReactiveObject
         var smallestDownloads = HistoryList.OrderBy(x => x.DownloadSizeBytes);
         FilteredHistory = new ObservableCollection<LiteDbHistory>(smallestDownloads);
     }
-    
+
     private void LoadHistory()
     {
         var allhistory = _history.GetAllHistoryList().ToList();

@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Padma.Models;
 using Padma.Services;
@@ -42,7 +43,7 @@ public partial class HomeViewModel : ReactiveObject
         this.WhenAnyValue(vm => vm.WorkshopUrl)
             .Where(url => !string.IsNullOrWhiteSpace(url))
             .DistinctUntilChanged()
-            .SelectMany(url => Observable.FromAsync(() => ExtractAppIdAndThumbnailAsync()))
+            .SelectMany(_ => Observable.FromAsync(() => ExtractAppIdAndThumbnailAsync()))
             .Subscribe(
                 _ =>
                 {
@@ -51,13 +52,70 @@ public partial class HomeViewModel : ReactiveObject
                 ex => LogAsync?.Invoke($"Error during extraction: {ex.Message}")
             );
 
+        // _downloadTracker.ProgressUpdated += progress =>
+        // {
+        //     DownloadProgress = progress;
+        //
+        //     // Update the status message depending on progress
+        //     if (DownloadStarted && DownloadStatusNow == "Downloading")
+        //     {
+        //         if (progress == 100)
+        //         {
+        //             // Don't update here - the CommandButton_OnClickAsync handler will update status
+        //         }
+        //         else if (progress > 0 && progress < 100)
+        //         {
+        //             // UI will show progress bar movement, no need to change status text
+        //         }
+        //
+        //
+        //
+        //         }
+        //     };
+        
+        SetupEventHandlers();
+
         // Load a default thumbnail at startup.
         InitializeThumbnailsAsync();
     }
 
     public event Func<string, Task>? LogAsync;
 
-    private async void InitializeThumbnailsAsync() => await LoadModsThumbnailAsync("https://i.imgur.com/mi85vxR.png");
+    private async void InitializeThumbnailsAsync()
+    {
+        await LoadModsThumbnailAsync("https://i.imgur.com/mi85vxR.png");
+    }
+
+    private void SetupEventHandlers()
+    {
+        _runner.LogAsync += UiLogsMessage;
+        LogAsync += UiLogsMessage;
+        _appIdFinder.LogAsync += UiLogsMessage;
+        _thumbnailLoader.LogAsync += UiLogsMessage;
+        _history.LogAsync += UiLogsMessage;
+        _stellarisAutoInstall.LogAsync += UiLogsMessage;
+    }
+    
+    private async Task UiLogsMessage(string message)
+    {
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            // Get the current log text from the property.
+            var currentLog = LogsMessage;
+         
+            // If this is the first log appended, add a newline after the welcome message.
+            if (currentLog == "Welcome to Padma version 1.0")
+            {
+                currentLog += Environment.NewLine;
+            }
+         
+            // Append the new message with a newline.
+            currentLog += message + Environment.NewLine;
+         
+            // Update the property to trigger UI notifications.
+            LogsMessage = currentLog;
+        });
+    }
     
     /// <summary>
     ///     Extracts the app ID and loads the thumbnail.
@@ -107,12 +165,14 @@ public partial class HomeViewModel : ReactiveObject
     private async Task SaveHistoryAsync()
     {
         if (!string.IsNullOrEmpty(_workshopUrl) && !string.IsNullOrEmpty(_workshopTitle))
+        {
             await _history.SaveHistoryAsync(
                 WorkshopTitle,
                 _workshopUrl,
                 DownloadedPath,
                 _appIdFinder.FileSizeInfo,
                 _appIdFinder.FileSizeBytes);
+        }
     }
 
     [RelayCommand]
@@ -130,6 +190,9 @@ public partial class HomeViewModel : ReactiveObject
             DownloadStatusNow = "Downloading";
             DownloadStarted = true;
             ButtonContent = "Cancel";
+
+            // Add log message to indicate start of process
+            await LogAsync?.Invoke("Starting download process...");
 
             // Run the download process.
             await _runner.RunSteamCmd(_workshopId, _appId);
@@ -149,11 +212,15 @@ public partial class HomeViewModel : ReactiveObject
             }
 
             if (_history.HistoryEnabled && _runner.Success)
+            {
                 await SaveHistoryAsync();
+            }
 
             await LogAsync?.Invoke("All processes finished.");
             if (DownloadStatusNow is "Finished")
+            {
                 ButtonContent = "Open";
+            }
         }
     }
 
@@ -163,12 +230,17 @@ public partial class HomeViewModel : ReactiveObject
         switch (DownloadStatusNow)
         {
             case "Finished":
+            {
                 await _folderPicker.OpenFolder(DownloadedPath);
                 break;
+            }
             case "Failed":
+            {
                 ButtonContent = "Failed";
                 break;
+            }
             default:
+            {
                 try
                 {
                     CancelEnabled = false;
@@ -179,8 +251,27 @@ public partial class HomeViewModel : ReactiveObject
                     CancelEnabled = true;
                     ButtonContent = "Canceled";
                 }
+
                 break;
+            }
         }
+    }
+
+    [RelayCommand]
+    public void HideLogsOnClick()
+    {
+        ConsoleLogsVisible = !ConsoleLogsVisible;
+        HideLogsHoverMessage = ConsoleLogsVisible switch
+        {
+            true => "Hide Logs",
+            false => "Show Logs"
+        };
+
+        HideLogsIcon = ConsoleLogsVisible switch
+        {
+            true => "/Assets/console-64.png",
+            false => "/Assets/console-64-crossed.png"
+        };
     }
 
     /// <summary>
@@ -220,6 +311,7 @@ public partial class HomeViewModel : ReactiveObject
 
     // Backing fields for properties.
     private string _workshopId;
+    private string _logsMessage = "Welcome to Padma version 1.0";
     private string _appId;
     private string _buttonContent = "Cancel";
     private string _workshopTitle = "Created by Codecoo";
@@ -230,6 +322,9 @@ public partial class HomeViewModel : ReactiveObject
     private string? _workshopUrl;
     private string _fileSizeInfo;
     private bool _isVisible;
+    private string _hideLogsHoverMessage = "Hide Logs";
+    private bool _consoleLogsVisible = true;
+    private string _hideLogsIcon = "/Assets/console-64.png";
     private string _downloadStatus;
     private int _downloadProgress;
     private ObservableCollection<LiteDbHistory> _historyList = new();
@@ -260,6 +355,12 @@ public partial class HomeViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _downloadStarted, value);
     }
 
+    public string LogsMessage
+    {
+        get => _logsMessage;
+        set => this.RaiseAndSetIfChanged(ref _logsMessage, value);
+    }
+
     public string FileSizeInfo
     {
         get => _fileSizeInfo;
@@ -270,6 +371,24 @@ public partial class HomeViewModel : ReactiveObject
     {
         get => _isVisible;
         set => this.RaiseAndSetIfChanged(ref _isVisible, value);
+    }
+
+    public string HideLogsIcon
+    {
+        get => _hideLogsIcon;
+        set => this.RaiseAndSetIfChanged(ref _hideLogsIcon, value);
+    }
+
+    public string HideLogsHoverMessage
+    {
+        get => _hideLogsHoverMessage;
+        set => this.RaiseAndSetIfChanged(ref _hideLogsHoverMessage, value);
+    }
+
+    public bool ConsoleLogsVisible
+    {
+        get => _consoleLogsVisible;
+        set => this.RaiseAndSetIfChanged(ref _consoleLogsVisible, value);
     }
 
     public string WorkshopUrl

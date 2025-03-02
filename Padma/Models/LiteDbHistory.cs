@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using LiteDB;
 
@@ -13,7 +15,7 @@ public class LiteDbHistory
 {
     [BsonId] public int Id { get; set; }
 
-    public DateTime Date { get; set; }
+    public string Date { get; set; }
     public string WorkshopTitle { get; set; }
     public string? WorkshopUrl { get; set; }
     public string DownloadLocation { get; set; }
@@ -25,7 +27,6 @@ public class LiteDbHistory
 public class SaveHistory
 {
     public bool HistoryEnabled = true;
-
     public SaveHistory()
     {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Padma",
@@ -53,7 +54,7 @@ public class SaveHistory
             var history = db.GetCollection<LiteDbHistory>("history");
             var historyEntry = new LiteDbHistory
             {
-                Date = DateTime.UtcNow,
+                Date = DateTime.Now.ToString("g", new CultureInfo("en-GB")),
                 WorkshopTitle = workshopTitle,
                 WorkshopUrl = workshopUrl,
                 DownloadLocation = downloadLocation,
@@ -65,7 +66,7 @@ public class SaveHistory
             HistoryChangedSignal.OnNext(Unit.Default);
         }
     }
-    
+
     public IEnumerable<LiteDbHistory> GetAllHistoryList()
     {
         var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Padma",

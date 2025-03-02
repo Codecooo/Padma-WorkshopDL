@@ -18,16 +18,21 @@ public class SupportedGames
 {
     public SupportedGames()
     {
-        string dbPath = Path.Combine(AppContext.BaseDirectory, "data", "list_supported_games.db");
-        string targetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Padma", "data", "list_supported_games.db");
-        
+        var dbPath = Path.Combine(AppContext.BaseDirectory, "data", "list_supported_games.db");
+        var targetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Padma", "data", "list_supported_games.db");
+
         if (!File.Exists(targetPath))
-            File.Move(dbPath, targetPath);
+        {
+            File.Copy(dbPath, targetPath);
+        }
+
     }
 
     public IEnumerable<SupportedGamesData> GetAllGames()
     {
-        string targetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Padma", "data", "list_supported_games.db");
+        var targetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Padma", "data", "list_supported_games.db");
         using (var db = new LiteDatabase(targetPath))
         {
             var supportedGamesData = db.GetCollection<SupportedGamesData>("supported_games");
