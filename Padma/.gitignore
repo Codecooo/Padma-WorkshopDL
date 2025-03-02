@@ -406,6 +406,4 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-# JetBrains IDE (e.g., IntelliJ, PyCharm) specific files
-.idea/
-
+/Padma.csproj
