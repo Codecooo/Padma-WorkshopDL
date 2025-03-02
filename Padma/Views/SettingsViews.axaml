@@ -8,18 +8,24 @@
              x:Class="Padma.Views.SettingsViews">
     <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto" Background="{DynamicResource MainDarkBrush}">
         <Label Margin="5" HorizontalAlignment="Center" Grid.Row="0" Foreground="Gray" Content="Settings" FontSize="28" />
+        
+        <!-- Disable History -->
         <StackPanel Spacing="3" Grid.Row="1" Orientation="Vertical">
             <TextBlock FontSize="17" Margin="30,0,5,0" Foreground="White" Text="Disable History"
                        VerticalAlignment="Center" />
             <ToggleSwitch IsChecked="{Binding DisableHistoryChecked}" Margin="60,0" Foreground="White"
                           Command="{Binding RememberHistoryToggleCommand}" />
         </StackPanel>
+        
+        <!-- Disable Auto Install Stellaris Mods -->
         <StackPanel Spacing="3" Grid.Row="2" Orientation="Vertical">
             <TextBlock FontSize="17" Margin="30,17,5,0" Foreground="White" Text="Disable Auto Install Stellaris Mods"
                        VerticalAlignment="Center" />
             <ToggleSwitch IsChecked="{Binding DisableStellarisInstallChecked}" Margin="60,0" Foreground="White"
                           Command="{Binding DisableStellarisAutoInstallModsCommand}" />
         </StackPanel>
+        
+        <!-- Change Download Directory Options  -->
         <Grid Grid.Row="3" RowDefinitions="Auto, *">
             <TextBlock Grid.Row="0" FontSize="17" Margin="30,17,5,5" Foreground="White"
                        Text="Change Download Directory" VerticalAlignment="Center" />
@@ -31,12 +37,16 @@
                 </Button>
             </StackPanel>
         </Grid>
+        
+        <!-- Clear History Button -->
         <StackPanel Grid.Row="4" Spacing="3">
             <TextBlock FontSize="17" Margin="30,17,5,0" Foreground="White" Text="Clear History"
                        VerticalAlignment="Center" />
             <Button IsEnabled="True" Command="{Binding ClearHistoryCommand}" Classes="Small"
                     VerticalContentAlignment="Center" Content="Clear" Height="30" Margin="60,0" />
         </StackPanel>
+        
+        <!-- Reset Padma Button -->
         <StackPanel Grid.Row="5" Spacing="3">
             <TextBlock FontSize="17" Margin="30,17,5,0" Foreground="White" Text="Reset Padma"
                        VerticalAlignment="Center" />

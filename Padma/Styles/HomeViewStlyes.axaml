@@ -54,10 +54,10 @@
         <Setter Property="Background" Value="{DynamicResource MidnightBlueBrush}" />
     </Style>
     <Style Selector="Image.Console-checked:pointerover">
-        <Setter Property="Opacity" Value="0.4"/>
+        <Setter Property="Opacity" Value="0.4" />
     </Style>
     <Style Selector="Image.Console-unchecked:pointerover">
-        <Setter Property="Opacity" Value="0.4"/>
+        <Setter Property="Opacity" Value="0.4" />
     </Style>
     <Style Selector="ToggleButton:checked /template/ ContentPresenter">
         <Setter Property="Background" Value="Transparent" />
@@ -78,12 +78,12 @@
         <Setter Property="IsVisible" Value="True" />
     </Style>
     <Style Selector="Button.OpenFolder">
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="Transparent" />
     </Style>
     <Style Selector="Button.OpenFolder:pressed">
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="Transparent" />
     </Style>
     <Style Selector="Button.OpenFolder:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="Transparent" />
     </Style>
 </Styles>

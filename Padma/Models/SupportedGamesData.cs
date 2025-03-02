@@ -8,8 +8,8 @@ namespace Padma.Models;
 
 public class SupportedGamesData
 {
-    [BsonId] 
-    public int Id { get; set; }
+    [BsonId] public int Id { get; set; }
+
     public string AppId { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
 }
@@ -22,11 +22,7 @@ public class SupportedGames
         var targetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Padma", "data", "list_supported_games.db");
 
-        if (!File.Exists(targetPath))
-        {
-            File.Copy(dbPath, targetPath);
-        }
-
+        if (!File.Exists(targetPath)) File.Copy(dbPath, targetPath);
     }
 
     public IEnumerable<SupportedGamesData> GetAllGames()

@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using ReactiveUI;
 
 namespace Padma.Services;
@@ -39,6 +40,8 @@ public class DownloadProgressTracker : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _workshopId, value);
     }
 
+    public event Func<string, Task>? LogAsync;
+
     public event Action<int>? ProgressUpdated;
 
     public void Reset()
@@ -66,11 +69,7 @@ public class DownloadProgressTracker : ReactiveObject
 
         DownloadFolder = Path.Combine(DownloadFolder, "steamapps", "workshop", "downloads");
 
-        if (!Directory.Exists(DownloadFolder))
-        {
-            Console.WriteLine("Base folder does not exist. Waiting for it to be created.");
-            Directory.CreateDirectory(DownloadFolder);
-        }
+        if (!Directory.Exists(DownloadFolder)) Directory.CreateDirectory(DownloadFolder);
 
         FolderWatcher = new FileSystemWatcher(DownloadFolder)
         {
@@ -81,14 +80,14 @@ public class DownloadProgressTracker : ReactiveObject
 
         FolderWatcher.Created += (s, e) =>
         {
-            string expectedPath = Path.Combine(DownloadFolder, appId, workshopId);
+            var expectedPath = Path.Combine(DownloadFolder, appId, workshopId);
             if (Directory.Exists(expectedPath))
             {
                 DownloadFolder = expectedPath;
                 AttachDownloadWatcher(DownloadFolder);
-                return; // Exit the method if we've already set up the watcher
+                return;
             }
-            
+
             var dirInfo = new DirectoryInfo(e.FullPath);
             if (dirInfo.Name.Equals(workshopId, StringComparison.OrdinalIgnoreCase) &&
                 dirInfo.Parent?.Name.Equals(appId, StringComparison.OrdinalIgnoreCase) == true)
@@ -128,7 +127,7 @@ public class DownloadProgressTracker : ReactiveObject
         ProgressDebounceTimer?.Change(50, Timeout.Infinite);
     }
 
-    private void RecalculateProgress()
+    private async Task RecalculateProgress()
     {
         try
         {
@@ -148,7 +147,7 @@ public class DownloadProgressTracker : ReactiveObject
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error recalculating download progress: {ex.Message}");
+            await LogAsync($"Error recalculating download progress: {ex.Message}");
         }
     }
 }

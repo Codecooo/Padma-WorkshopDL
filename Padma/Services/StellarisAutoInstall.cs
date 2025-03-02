@@ -53,16 +53,16 @@ public class StellarisAutoInstall
 
             if (!await TryCreateDirectory(StellarisDocPath))
             {
-                await LogAsync?.Invoke($"Error: No write permission for {StellarisDocPath}");
+                await LogAsync($"Error: No write permission for {StellarisDocPath}");
                 return;
             }
 
-            await LogAsync?.Invoke($"Installing mods to {StellarisDocPath}");
+            await LogAsync($"Installing mods to {StellarisDocPath}");
             await MoveStellarisMods(modsDownloadPath, workshopTitle);
         }
         catch (Exception ex)
         {
-            await LogAsync?.Invoke($"Error during mod installation: {ex.Message}");
+            await LogAsync($"Error during mod installation: {ex.Message}");
             throw;
         }
     }
@@ -92,23 +92,22 @@ public class StellarisAutoInstall
                 catch (InvalidDataException ex) when (ex.Message.Contains("bzip2"))
                 {
                     // If it's a bzip2 error, log it and continue - the content might already be extracted
-                    await LogAsync?.Invoke(
-                        $"Skipping bzip2 compressed file {zipFile} - content may already be extracted. If not install it manually");
+                    await LogAsync($"Skipping bzip2 compressed file {zipFile} - content may already be extracted. If not install it manually");
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    await LogAsync?.Invoke($"No permission to access {zipFile}");
+                    await LogAsync($"No permission to access {zipFile}");
                 }
                 catch (Exception ex)
                 {
-                    await LogAsync?.Invoke($"Error extracting {zipFile}: {ex.Message}");
+                    await LogAsync($"Error extracting {zipFile}: {ex.Message}");
                 }
 
             // Find and process descriptor
             var descriptor = Directory.GetFiles(downloadPath, "descriptor.mod").FirstOrDefault();
             if (descriptor == null)
             {
-                await LogAsync?.Invoke($"No descriptor.mod found in {downloadPath}");
+                await LogAsync($"No descriptor.mod found in {downloadPath}");
                 return;
             }
 
@@ -119,7 +118,7 @@ public class StellarisAutoInstall
             }
             catch (UnauthorizedAccessException)
             {
-                await LogAsync?.Invoke($"No permission to read {descriptor}");
+                await LogAsync($"No permission to read {descriptor}");
                 return;
             }
 
@@ -133,7 +132,7 @@ public class StellarisAutoInstall
 
             if (string.IsNullOrEmpty(modTitle))
             {
-                await LogAsync?.Invoke("Could not find mod name in descriptor.mod, using workshop title");
+                await LogAsync("Could not find mod name in descriptor.mod, using workshop title");
                 modTitle = workshopTitle;
                 descriptorLines.Add($"name=\"{workshopTitle}\"");
             }
@@ -158,18 +157,16 @@ public class StellarisAutoInstall
                 File.Move(descriptor, targetDescriptorPath, true);
                 Directory.Move(downloadPath, targetModPath);
 
-                await LogAsync?.Invoke($"Successfully installed mod: {modTitle}");
+                await LogAsync($"Successfully installed mod: {modTitle}");
             }
             catch (UnauthorizedAccessException ex)
             {
-                await LogAsync?.Invoke($"Permission denied while installing mod: {ex.Message}");
-                throw;
+                await LogAsync($"Permission denied while installing mod: {ex.Message}");
             }
         }
         catch (Exception ex)
         {
-            await LogAsync?.Invoke($"Error moving mod files: {ex.Message}");
-            throw;
+            await LogAsync($"Error moving mod files: {ex.Message}");
         }
     }
 }

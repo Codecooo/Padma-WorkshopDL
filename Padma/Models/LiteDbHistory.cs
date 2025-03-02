@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using LiteDB;
 
@@ -27,6 +26,7 @@ public class LiteDbHistory
 public class SaveHistory
 {
     public bool HistoryEnabled = true;
+
     public SaveHistory()
     {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Padma",

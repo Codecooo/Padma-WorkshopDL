@@ -11,7 +11,6 @@ public class ThumbnailLoader
 
     public ThumbnailLoader()
     {
-        // Initialize the HttpClient in the constructor
         _httpClient = new HttpClient();
     }
 

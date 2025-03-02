@@ -51,7 +51,7 @@ public partial class HomeViewModel : ReactiveObject
                 },
                 ex => LogAsync?.Invoke($"Error during extraction: {ex.Message}")
             );
-        
+
         SetupEventHandlers();
 
         // Load a default thumbnail at startup.
@@ -65,6 +65,10 @@ public partial class HomeViewModel : ReactiveObject
         await LoadModsThumbnailAsync("https://i.imgur.com/mi85vxR.png");
     }
 
+    /// <summary>
+    /// Setting up the event handlers for each classes/events and then reoport to the
+    /// UiLogsMessage method
+    /// </summary>
     private void SetupEventHandlers()
     {
         _runner.LogAsync += UiLogsMessage;
@@ -73,29 +77,31 @@ public partial class HomeViewModel : ReactiveObject
         _thumbnailLoader.LogAsync += UiLogsMessage;
         _history.LogAsync += UiLogsMessage;
         _stellarisAutoInstall.LogAsync += UiLogsMessage;
+        _downloadTracker.LogAsync += UiLogsMessage;
     }
-    
+
+    /// <summary>
+    /// Just for updating the UI for Console Log Window 
+    /// </summary>
+    /// <param name="message"></param>
     private async Task UiLogsMessage(string message)
     {
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
             // Get the current log text from the property.
             var currentLog = LogsMessage;
-         
+
             // If this is the first log appended, add a newline after the welcome message.
-            if (currentLog == "Welcome to Padma version 1.0")
-            {
-                currentLog += Environment.NewLine;
-            }
-         
+            if (currentLog == "Welcome to Padma version 1.0") currentLog += Environment.NewLine;
+
             // Append the new message with a newline.
             currentLog += message + Environment.NewLine;
-         
+
             // Update the property to trigger UI notifications.
             LogsMessage = currentLog;
         });
     }
-    
+
     /// <summary>
     ///     Extracts the app ID and loads the thumbnail.
     /// </summary>
@@ -134,29 +140,36 @@ public partial class HomeViewModel : ReactiveObject
             IsEnabled = true;
         }
     }
-
+    
     private async Task LoadModsThumbnailAsync(string url)
     {
         var bitmap = await _thumbnailLoader.LoadThumbnail(url);
         ModsThumbnail = bitmap;
     }
-
+    
+    /// <summary>
+    /// Save the download history to LiteDb history.db
+    /// </summary>
     private async Task SaveHistoryAsync()
     {
         if (!string.IsNullOrEmpty(_workshopUrl) && !string.IsNullOrEmpty(_workshopTitle))
-        {
             await _history.SaveHistoryAsync(
                 WorkshopTitle,
                 _workshopUrl,
                 DownloadedPath,
                 _appIdFinder.FileSizeInfo,
                 _appIdFinder.FileSizeBytes);
-        }
     }
 
+    /// <summary>
+    /// Once the user click download this method will execute much of what this app mainly does
+    /// So it just call the CmdRunner method with the corresponding ModID or AppID 
+    /// </summary>
     [RelayCommand]
     private async Task DownloadButton_OnClickAsync()
     {
+        if (string.IsNullOrEmpty(_appId) || string.IsNullOrEmpty(_workshopId))
+            return;
         try
         {
             // Cancel any previous pending delay tasks.
@@ -190,19 +203,17 @@ public partial class HomeViewModel : ReactiveObject
                 DownloadedPath = $"\"{_stellarisAutoInstall.StellarisDocPath}\"";
             }
 
-            if (_history.HistoryEnabled && _runner.Success)
-            {
-                await SaveHistoryAsync();
-            }
+            if (_history.HistoryEnabled && _runner.Success) await SaveHistoryAsync();
 
             await LogAsync?.Invoke("All processes finished.");
-            if (DownloadStatusNow is "Finished")
-            {
-                ButtonContent = "Open";
-            }
+            if (DownloadStatusNow is "Finished") ButtonContent = "Open";
         }
     }
-
+    
+    /// <summary>
+    /// Method to cancel the download process by killing steamcmd process
+    /// if the download is finished it will change to open the mod download folder
+    /// </summary>
     [RelayCommand]
     private async Task CancelAndOpenAsync()
     {
@@ -220,17 +231,10 @@ public partial class HomeViewModel : ReactiveObject
             }
             default:
             {
-                try
-                {
-                    CancelEnabled = false;
-                    _ = _runner.KillSteamCmd();
-                }
-                finally
-                {
-                    CancelEnabled = true;
-                    ButtonContent = "Canceled";
-                }
-
+                CancelEnabled = false;
+                _ = _runner.KillSteamCmd();
+                CancelEnabled = true;
+                ButtonContent = "Canceled";
                 break;
             }
         }

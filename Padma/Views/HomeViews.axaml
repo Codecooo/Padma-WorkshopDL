@@ -9,7 +9,7 @@
     <Grid Background="{DynamicResource MainDarkBrush}" ColumnDefinitions="*, Auto">
         <Grid Grid.Column="0" RowDefinitions="Auto, *">
             <!-- Hide Console Logs Window Button -->
-            <ToggleButton Grid.Row="0" 
+            <ToggleButton Grid.Row="0"
                           ToolTip.Tip="{Binding HideLogsHoverMessage}"
                           ToolTip.Placement="Bottom"
                           ToolTip.VerticalOffset="1"
@@ -82,7 +82,8 @@
         <!-- Console Log Window -->
         <Grid IsVisible="{Binding ConsoleLogsVisible}" Grid.Column="1" Background="#161C1E" Width="310">
             <ScrollViewer VerticalScrollBarVisibility="Hidden" Margin="10">
-                <TextBox Name="LogOutput" Text="{Binding LogsMessage}" Classes="ConsoleLog" FontSize="11" Background="#1B1212"
+                <TextBox Name="LogOutput" Text="{Binding LogsMessage}" Classes="ConsoleLog" FontSize="11"
+                         Background="#1B1212"
                          AcceptsReturn="True" IsReadOnly="True" Foreground="White" />
             </ScrollViewer>
         </Grid>

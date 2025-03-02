@@ -1,11 +1,7 @@
 using System;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
-using Padma.Models;
-using Padma.Services;
 using Padma.ViewModels;
 
 namespace Padma.Views;
@@ -13,6 +9,7 @@ namespace Padma.Views;
 public partial class HomeViews : UserControl
 {
     private readonly HomeViewModel _homeViewModel;
+
     public HomeViews()
     {
         InitializeComponent();
@@ -38,7 +35,7 @@ public partial class HomeViews : UserControl
         // Double check DataContext here too
         if (DataContext is not HomeViewModel && _homeViewModel != null) DataContext = _homeViewModel;
     }
-    
+
     private void AutoScrollLogs()
     {
         var logoutput = this.FindControl<TextBox>("LogOutput");

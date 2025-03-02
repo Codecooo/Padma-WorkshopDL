@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -9,14 +8,13 @@ using Timer = System.Timers.Timer;
 
 namespace Padma.Services;
 
-
 public class CmdRunner
 {
     private const int MaxRetries = 6;
     private const int RetryDelaySeconds = 10;
     private const int DownloadTimeoutMinutes = 30;
     private readonly FolderPicker _folderPicker;
-    
+
     public string DownloadPath = string.Empty;
     public string SteamCmdDirPath = string.Empty;
     public string SteamCmdFilePath = string.Empty;
@@ -30,9 +28,9 @@ public class CmdRunner
     public event Func<string, Task>? LogAsync;
 
     /// <summary>
-    /// Run steamcmd on bash, first check if the actual steamcmd is in the Padma directory if its not
-    /// it will proceed to download steamcmd, then download the mod based on the WorkshopID and AppID
-    /// If steamcmd found in the Padma directory it will send straight to download the mods
+    ///     Run steamcmd on bash, first check if the actual steamcmd is in the Padma directory if its not
+    ///     it will proceed to download steamcmd, then download the mod based on the WorkshopID and AppID
+    ///     If steamcmd found in the Padma directory it will send straight to download the mods
     /// </summary>
     /// <param name="workshopId"></param>
     /// <param name="appId"></param>
@@ -70,8 +68,8 @@ public class CmdRunner
     }
 
     /// <summary>
-    /// Download steamcmd with bash based on official Valve instructions for linux x86-64
-    /// I could honestly do this with HTTP client but since I already have bash method might as well incorporate it
+    ///     Download steamcmd with bash based on official Valve instructions for linux x86-64
+    ///     I could honestly do this with HTTP client but since I already have bash method might as well incorporate it
     /// </summary>
     public async Task SteamCmdDownloader()
     {
@@ -176,10 +174,10 @@ public class CmdRunner
 
         // Use 3 ms interval and StringBuilder for not freezing the UI
         var logsBuffer = new StringBuilder();
-        Timer logTimer = new Timer(3);
+        var logTimer = new Timer(3);
         logTimer.Elapsed += async (sender, args) =>
         {
-            string messagesToSend = string.Empty;
+            var messagesToSend = string.Empty;
 
             lock (logsBuffer)
             {
@@ -189,11 +187,8 @@ public class CmdRunner
                     logsBuffer.Clear();
                 }
             }
-            
-            if (!string.IsNullOrEmpty(messagesToSend))
-            {
-                await LogAsync(messagesToSend);
-            }
+
+            if (!string.IsNullOrEmpty(messagesToSend)) await LogAsync(messagesToSend);
         };
         logTimer.Start();
 
@@ -206,8 +201,9 @@ public class CmdRunner
                 lock (logsBuffer)
                 {
                     logsBuffer.Append($"Output: {e.Data} ");
-                }                
-                if (e.Data.Contains("Success. Downloaded")) 
+                }
+
+                if (e.Data.Contains("Success. Downloaded"))
                     Success = true;
             }
         };
@@ -215,12 +211,10 @@ public class CmdRunner
         process.ErrorDataReceived += (sender, e) =>
         {
             if (!string.IsNullOrEmpty(e.Data))
-            {
                 lock (logsBuffer)
                 {
                     logsBuffer.Append($"Error: {e.Data} ");
                 }
-            }
         };
 
         process.Exited += (sender, args) => { tcs.TrySetResult(true); };
@@ -256,7 +250,6 @@ public class CmdRunner
         }
     }
 
-    
     public async Task KillSteamCmd()
     {
         try

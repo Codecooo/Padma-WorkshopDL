@@ -13,7 +13,8 @@ namespace Padma.Services;
 
 public class FolderPicker
 {
-    private readonly string _settingsPath = "/home/lagita/RiderProjects/Padma/Padma/appsettings.json";
+    private readonly string _settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "Padma", "appsettings.json");
 
     public FolderPicker()
     {
@@ -24,6 +25,9 @@ public class FolderPicker
     public string FolderPathView { get; private set; }
     public event Func<string, Task>? LogAsync;
 
+    /// <summary>
+    /// Initialize the download location based on the appsettings.json 
+    /// </summary>
     private void InitializeFromSettings()
     {
         try
@@ -80,6 +84,10 @@ public class FolderPicker
         }
     }
 
+    /// <summary>
+    /// Open FolderPicker storage method from Avalonia so user could choose desired folder path
+    /// </summary>
+    /// <returns></returns>
     private async Task<IReadOnlyList<IStorageFolder>?> DoOpenFilePickerAsync()
     {
         if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
