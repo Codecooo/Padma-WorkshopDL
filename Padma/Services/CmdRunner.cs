@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Timer = System.Timers.Timer;
 
 namespace Padma.Services;
 
@@ -13,17 +16,15 @@ public class CmdRunner
     private const int RetryDelaySeconds = 10;
     private const int DownloadTimeoutMinutes = 30;
     private readonly FolderPicker _folderPicker;
-    private readonly DownloadProgressTracker _downloadTracker;
     
     public string DownloadPath = string.Empty;
     public string SteamCmdDirPath = string.Empty;
     public string SteamCmdFilePath = string.Empty;
     public bool Success;
 
-    public CmdRunner(FolderPicker folderPicker, DownloadProgressTracker downloadTracker)
+    public CmdRunner(FolderPicker folderPicker)
     {
         _folderPicker = folderPicker;
-        _downloadTracker = downloadTracker;
     }
 
     public event Func<string, Task>? LogAsync;
@@ -154,6 +155,8 @@ public class CmdRunner
 
     /// <summary>
     ///     Run bash method used for both downloading steamcmd and running steamcmd to download mods
+    ///     For logging add delay for 3 ms so it doesnt overwhelm the UI and freeze it. Just to do it
+    ///     Because steamcmd update freeze the UI.
     /// </summary>
     /// <param name="arguments"></param>
     /// <param name="cancellationToken"></param>
@@ -171,21 +174,53 @@ public class CmdRunner
             CreateNoWindow = true
         };
 
+        // Use 3 ms interval and StringBuilder for not freezing the UI
+        var logsBuffer = new StringBuilder();
+        Timer logTimer = new Timer(3);
+        logTimer.Elapsed += async (sender, args) =>
+        {
+            string messagesToSend = string.Empty;
+
+            lock (logsBuffer)
+            {
+                if (logsBuffer.Length > 0)
+                {
+                    messagesToSend = logsBuffer.ToString().TrimEnd();
+                    logsBuffer.Clear();
+                }
+            }
+            
+            if (!string.IsNullOrEmpty(messagesToSend))
+            {
+                await LogAsync(messagesToSend);
+            }
+        };
+        logTimer.Start();
+
         var tcs = new TaskCompletionSource<bool>();
 
-        process.OutputDataReceived += async (sender, e) =>
+        process.OutputDataReceived += (sender, e) =>
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
-                await LogAsync($"Output: {e.Data}");
-                // Look for progress indicators in the output
-                if (e.Data.Contains("Success. Downloaded")) Success = true;
+                lock (logsBuffer)
+                {
+                    logsBuffer.Append($"Output: {e.Data} ");
+                }                
+                if (e.Data.Contains("Success. Downloaded")) 
+                    Success = true;
             }
         };
 
-        process.ErrorDataReceived += async (sender, e) =>
+        process.ErrorDataReceived += (sender, e) =>
         {
-            if (!string.IsNullOrEmpty(e.Data)) await LogAsync($"Error: {e.Data}");
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                lock (logsBuffer)
+                {
+                    logsBuffer.Append($"Error: {e.Data} ");
+                }
+            }
         };
 
         process.Exited += (sender, args) => { tcs.TrySetResult(true); };
@@ -198,7 +233,7 @@ public class CmdRunner
             }
             catch (Exception ex)
             {
-                LogAsync($"Error killing process: {ex.Message}").Wait();
+                logsBuffer.Append($"Error killing process: {ex.Message}");
             }
         });
 
@@ -215,15 +250,25 @@ public class CmdRunner
             throw new OperationCanceledException("Download operation timed out");
         }
 
-        await LogAsync($"SteamCmd exited with code {process.ExitCode}");
+        lock (logsBuffer)
+        {
+            logsBuffer.Append($"SteamCmd exited with code {process.ExitCode}");
+        }
     }
 
-
+    
     public async Task KillSteamCmd()
     {
-        Success = false;
-        await LogAsync("Killing steamcmd...");
-        foreach (var process in Process.GetProcessesByName("steamcmd")) process.Kill();
-        await LogAsync("Download has been canceled");
+        try
+        {
+            Success = false;
+            await LogAsync("Killing steamcmd...");
+            foreach (var process in Process.GetProcessesByName("steamcmd")) process.Kill();
+            await LogAsync("Download has been canceled");
+        }
+        catch (Exception e)
+        {
+            await LogAsync($"Error killing steamcmd: {e.Message}");
+        }
     }
 }

@@ -51,27 +51,6 @@ public partial class HomeViewModel : ReactiveObject
                 },
                 ex => LogAsync?.Invoke($"Error during extraction: {ex.Message}")
             );
-
-        // _downloadTracker.ProgressUpdated += progress =>
-        // {
-        //     DownloadProgress = progress;
-        //
-        //     // Update the status message depending on progress
-        //     if (DownloadStarted && DownloadStatusNow == "Downloading")
-        //     {
-        //         if (progress == 100)
-        //         {
-        //             // Don't update here - the CommandButton_OnClickAsync handler will update status
-        //         }
-        //         else if (progress > 0 && progress < 100)
-        //         {
-        //             // UI will show progress bar movement, no need to change status text
-        //         }
-        //
-        //
-        //
-        //         }
-        //     };
         
         SetupEventHandlers();
 

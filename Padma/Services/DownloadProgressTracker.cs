@@ -69,7 +69,7 @@ public class DownloadProgressTracker : ReactiveObject
         if (!Directory.Exists(DownloadFolder))
         {
             Console.WriteLine("Base folder does not exist. Waiting for it to be created.");
-            return;
+            Directory.CreateDirectory(DownloadFolder);
         }
 
         FolderWatcher = new FileSystemWatcher(DownloadFolder)
@@ -81,6 +81,14 @@ public class DownloadProgressTracker : ReactiveObject
 
         FolderWatcher.Created += (s, e) =>
         {
+            string expectedPath = Path.Combine(DownloadFolder, appId, workshopId);
+            if (Directory.Exists(expectedPath))
+            {
+                DownloadFolder = expectedPath;
+                AttachDownloadWatcher(DownloadFolder);
+                return; // Exit the method if we've already set up the watcher
+            }
+            
             var dirInfo = new DirectoryInfo(e.FullPath);
             if (dirInfo.Name.Equals(workshopId, StringComparison.OrdinalIgnoreCase) &&
                 dirInfo.Parent?.Name.Equals(appId, StringComparison.OrdinalIgnoreCase) == true)

@@ -21,7 +21,7 @@ public partial class MainWindow : Window
         var saveHistory = new SaveHistory();
         var supportedGames = new SupportedGames();
         var appIdFinder = new AppIdFinder(downloadProgressTracker);
-        var cmdRunner = new CmdRunner(folderpicker, downloadProgressTracker);
+        var cmdRunner = new CmdRunner(folderpicker);
         var thumbnailLoader = new ThumbnailLoader();
         var stellarisAutoInstall = new StellarisAutoInstall();
 
