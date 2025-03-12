@@ -3,7 +3,7 @@
 </p>
 
 # Padma Workshop Downloader
-Padma Workshop Downloader is a GUI wrapper for steamcmd to download workshop mods in Linux with easy to use and user friendly.
+Padma Workshop Downloader is a GUI wrapper for steamcmd to download workshop mods in Windows or Linux on any distributions with easy to use and user friendly.
 
 ## Features of Padma
 | Features | Status |
@@ -16,9 +16,19 @@ Padma Workshop Downloader is a GUI wrapper for steamcmd to download workshop mod
 
 With Padma now for Stellaris mods you don't have to manually install them with Paradox Launcher, the app will do that for you. It will automatically install Stellaris mods once they detect it. Of course you could disable this in settings.
 
-## How to Use
-1. Install the AppImage file from [Releases](https://github.com/Codecooo/Padma/releases/) in this github page
-2. Mark the AppImage file as executable by running this command in terminal `chmod +x Padma.AppImage`or set it as executable through file manager GUI. Run the AppImage file
+## How to Use 
+<br>
+<strong>Linux</strong>
+1. Install the AppImage file from latest [Releases](https://github.com/Codecooo/Padma/releases/) in this github page
+2. Mark the AppImage file as executable by running this command in terminal `chmod +x Padma-v1.1.0.AppImage`or set it as executable through file manager GUI. Run the AppImage file
+3. If you want to check for supported games, head over to the Supported Games tab (console icon) and search for your games
+4. In the home page, enter the steam workshop URL, wait for the process to fetch appID finish and then click download.
+5. For first use it will be quite slow because it will update steamcmd but once it finishes the process should be faster.
+
+<br>
+<strong>Windows</strong>
+1. Download the installer file from latest [Releases](https://github.com/Codecooo/Padma/releases/) in this github page
+2. Run the installer, accept any license agreement and change the installation directory if you want
 3. If you want to check for supported games, head over to the Supported Games tab (console icon) and search for your games
 4. In the home page, enter the steam workshop URL, wait for the process to fetch appID finish and then click download.
 5. For first use it will be quite slow because it will update steamcmd but once it finishes the process should be faster.

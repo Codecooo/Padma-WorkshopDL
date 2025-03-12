@@ -28,7 +28,14 @@ public class CmdRunner
     }
 
     public event Func<string, Task>? LogAsync;
-
+    
+    /// <summary>
+    ///     Run steamcmd on bash, first check if the actual steamcmd is in the Padma directory if its not
+    ///     it will proceed to download steamcmd, then download the mod based on the WorkshopID and AppID
+    ///     If steamcmd found in the Padma directory it will send straight to download the mods
+    /// </summary>
+    /// <param name="workshopId"></param>
+    /// <param name="appId"></param>
     public async Task RunSteamCmd(string workshopId, string appId)
     {
         SteamCmdDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Padma", "steamcmd");
@@ -106,7 +113,7 @@ public class CmdRunner
             else // Linux or macOS, using bash so it could function properly and simple
             {
                 var arguments = GetBashArgumentsForCommand(downloadCommandOrUrl);
-                await RunBash(arguments, CancellationToken.None);
+                await RunTerminal(arguments, CancellationToken.None);
             }
         }
         catch (Exception e)
@@ -114,7 +121,14 @@ public class CmdRunner
             await LogAsync($"Error during SteamCMD download/extraction: {e.Message}");
         }
     }
-
+    
+    /// <summary>
+    ///     Download the mods with bash for steamcmd, it provides delay if the process encounter any timeout error
+    ///     usual for large size downloads. The default is 6 max attempts, this should suffice unless the user has really
+    ///     bad internet speed or the size is abnormally large.
+    /// </summary>
+    /// <param name="workshopId"></param>
+    /// <param name="appId"></param>
     public async Task ModDownloader(string workshopId, string appId)
     {
         var retryCount = 0;
@@ -132,7 +146,7 @@ public class CmdRunner
                 var command = GetSteamCmdCommand(workshopId, appId);
                 var arguments = GetBashArgumentsForCommand(command);
                 await LogAsync($"Running steamcmd with {arguments}");
-                await RunBash(arguments, cts.Token);
+                await RunTerminal(arguments, cts.Token);
 
                 if (Success)
                 {
@@ -165,9 +179,17 @@ public class CmdRunner
             Success = false;
         }
     }
-
-
-    private async Task RunBash(string arguments, CancellationToken cancellationToken)
+    
+    /// <summary>
+    ///     Run terminal method used for both downloading steamcmd and running steamcmd to download mods
+    ///     Windows will use steamcmd directly while others like Linux and Mac will use bash
+    ///     For logging add delay for 3 ms so it doesnt overwhelm the UI and freeze it. Just to do it
+    ///     Because steamcmd update freeze the UI.
+    /// </summary>
+    /// <param name="arguments"></param>
+    /// <param name="cancellationToken"></param>
+    /// <exception cref="OperationCanceledException"></exception>
+    private async Task RunTerminal(string arguments, CancellationToken cancellationToken)
     {
         using var process = new Process();
         if (OperatingSystem.IsWindows())
