@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Thanks for stephenlepisto repo wixtoolsetexamples, This PadmaWinSetup 
+    is largely based on his provided examples.
+    check his repo
+    https://github.com/stephenlepisto/wixtoolsetexamples
+    
+    - This needs to be included in all .wxs files that reference the variables.
+    - For each install package project, generate new GUIDs for
+      ProductComponentGUID and UpgradeCode for both the
+      32-bit and 64-bit versions (total of four GUIDs), along with AppDocsGUID
+      (one GUID).
+      
+      Note: Once set, the UpgradeCode should never change, allowing each new
+      version of the setup package to upgrade an existing package with that
+      UpgradeCode.
+      
+    Wix Documentation for:
+    - Preprocessor commands: https://wixtoolset.org/docs/tools/preprocessor/
+    - Include: https://wixtoolset.org/docs/schema/wxs/include/
+-->
+
+<Include xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+    <!--
+        The productVersion.wxi file can be machine-generated, which is why it
+        is in a separate file.  For example, I wrote a script to read the
+        version information from the application and then write out
+        productVersion.wxi.
+    -->
+    <?include productVersion.wxi ?>
+
+    <!--
+        The type of the installer.  Need this to distinguish different install
+        packages and to allow each example to be installed side-by-side.
+            min  (Minimal)
+            ins  (InstallDir)
+            adv  (Advanced)
+            mon  (Mondo)
+            fea  (FeatureTree)
+    -->
+    <?define InstallType = "ins"?>
+
+    <!--
+        The AppName variable is built from the Padma target name property
+        appended by the install type to render a unique name for this installer.
+    -->
+    <?define AppName = "Padma Workshop Downloader" ?>
+    <?define Manufacturer = "Codecooo" ?>
+    <?if $(var.Configuration) = Release?>
+    <!-- Debug builds get "-Debug" as part of the name -->
+    <?define ProgramConfig = "-Release?>
+    <?else?>
+    <?define ProgramConfig = ""?>
+    <?endif?>
+    <?if $(var.Platform) = x64 ?>
+    <!-- Application name gets "-64bit" added for 64-bit builds. -->
+    <?define PlatformInName = "-64bit"?>
+    <?define Win64 = "yes" ?>
+    <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+    <?define ProductComponentGUID = "eb188da9-3d86-48e9-9147-eb67812f3d46"?>
+    <!-- UpgradeCode must be unique and not changed once the first version of the program is installed. -->
+    <?define UpgradeCode = "kFyGLD7qtEePdU6W+6TqfA==," ?>
+    <?else?>
+    <!-- Application name gets "-32bit" added for 32-bit builds. -->
+    <?define PlatformInName = "-32bit"?>
+    <?define Win64 = "no" ?>
+    <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+    <?define ProductComponentGUID = "kFyGLD7qtEePdU6W+6TqfA==,"?>
+    <!-- UpgradeCode must be unique and not changed once the first version of the program is installed. -->
+    <?define UpgradeCode = "7cdd4439-ba95-483f-aa2d-8cbcb7263cff," ?>
+    <?endif?>
+    <?define AppDataGUID = "c413eaba-9542-43c7-94b8-89b1f0dd7317," ?>
+    <?define DllFilesGUID = "1cbb8549-ca47-4a08-b3cb-5abbba5fca09," ?>
+
+    <!--
+        Complete name of the application that appears everywhere.
+        Guarantees the name is unique across all the setup project examples.
+    -->
+    <?define Name = "Padma Workshop Downloader"?>
+    
+    <!-- Name of the folder that appear in the Start Menu -->
+    <?define StartupMenuName = "$(var.AppName)"?>
+
+    <!--
+        Name of the package (used in the installer and in the Apps and Features
+        list.
+
+        Note that the product version is added to the name: This way, the
+        version of the product is visible in the Apps and Features list as well
+        as throughout the installer dialog process.
+    -->
+    <?define PackageName = "$(var.Name) $(var.ProductVersion)"?>
+
+    <!-- Name of the application folder in which the program is installed -->
+    <?define InstallFolderName = "$(var.AppName)"?>
+
+</Include>

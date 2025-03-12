@@ -1,6 +1,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Padma", "Padma\Padma.csproj", "{865D5485-A9FC-4F40-8196-D187AA18E536}"
 EndProject
+Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "padma-win-setup", "padma-win-setup/PadmaWinSetup.wixproj", "{82203736-6875-4094-B98C-6228338B5DE6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

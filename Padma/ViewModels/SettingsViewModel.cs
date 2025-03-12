@@ -27,10 +27,15 @@ public partial class SettingsViewModel : ReactiveObject
         _folderPicker = folderPicker;
         _homeViewModel = homeViewModel;
         _folderPathView = _folderPicker.FolderPathView;
-        _appSettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Padma", "appsettings.json");
-        if (!File.Exists(_appSettingsPath))
-            CreateAppSettings();
+        _appSettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Padma", "appsettings.json");
+
+        if (!OperatingSystem.IsWindows())
+        {
+            _appSettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Padma", "appsettings.json");
+        }
+
+        if (!File.Exists(_appSettingsPath)) CreateAppSettings();
 
         // Read the app settings from file 
         var appSettingsContent = File.ReadAllText(_appSettingsPath);
@@ -103,7 +108,7 @@ public partial class SettingsViewModel : ReactiveObject
     {
         _saveHistory.DeleteHistory();
         var steamappsPath = Path.Combine(_folderPicker.SelectedPath, "steamapps");
-        var steamcmdPath = Path.Combine(_folderPicker.SelectedPath, "SteamCMD");
+        var steamcmdPath = Path.Combine(_folderPicker.SelectedPath, "steamcmd");
         try
         {
             Directory.Delete(steamappsPath, true);
@@ -119,6 +124,7 @@ public partial class SettingsViewModel : ReactiveObject
         _settings["download_path"] = "default";
         DisableHistoryChecked = false;
         DisableStellarisInstallChecked = false;
+        FolderPathView = _folderPicker.FolderPathView;
         File.WriteAllText(_appSettingsPath, _settings.ToString());
     }
 

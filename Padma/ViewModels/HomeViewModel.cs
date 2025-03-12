@@ -22,7 +22,8 @@ public partial class HomeViewModel : ReactiveObject
         ThumbnailLoader thumbnailLoader,
         DownloadProgressTracker downloadTracker,
         FolderPicker folderPicker,
-        StellarisAutoInstall stellarisAutoInstall)
+        StellarisAutoInstall stellarisAutoInstall,
+        SupportedGames supportedGames)
     {
         _history = history;
         _folderPicker = folderPicker;
@@ -31,11 +32,12 @@ public partial class HomeViewModel : ReactiveObject
         _thumbnailLoader = thumbnailLoader;
         _downloadTracker = downloadTracker;
         _stellarisAutoInstall = stellarisAutoInstall;
+        _supportedGames = supportedGames;
 
-        // Subscribe to progress updates.
+        // Subscribe to progress updates in DownloadProgressTracker.
         _downloadTracker.ProgressUpdated += progress => DownloadProgress = progress;
 
-        // Auto-clear download bar when status changes.
+        // Auto-clear download bar when download finish or failed.
         this.WhenAnyValue(x => x.DownloadStatusNow)
             .Subscribe(_ => AutoClearDownloadBar());
 
@@ -66,8 +68,8 @@ public partial class HomeViewModel : ReactiveObject
     }
 
     /// <summary>
-    /// Setting up the event handlers for each classes/events and then reoport to the
-    /// UiLogsMessage method
+    ///     Setting up the event handlers for each classes/events and then reoport to the
+    ///     UiLogsMessage method
     /// </summary>
     private void SetupEventHandlers()
     {
@@ -78,10 +80,11 @@ public partial class HomeViewModel : ReactiveObject
         _history.LogAsync += UiLogsMessage;
         _stellarisAutoInstall.LogAsync += UiLogsMessage;
         _downloadTracker.LogAsync += UiLogsMessage;
+        _supportedGames.LogAsync += UiLogsMessage;
     }
 
     /// <summary>
-    /// Just for updating the UI for Console Log Window 
+    ///     Just for updating the UI for Console Log Window
     /// </summary>
     /// <param name="message"></param>
     private async Task UiLogsMessage(string message)
@@ -92,7 +95,7 @@ public partial class HomeViewModel : ReactiveObject
             var currentLog = LogsMessage;
 
             // If this is the first log appended, add a newline after the welcome message.
-            if (currentLog == "Welcome to Padma version 1.0") currentLog += Environment.NewLine;
+            if (currentLog == "Welcome to Padma version 1.1") currentLog += Environment.NewLine;
 
             // Append the new message with a newline.
             currentLog += message + Environment.NewLine;
@@ -132,23 +135,22 @@ public partial class HomeViewModel : ReactiveObject
         }
         catch (Exception ex)
         {
-            if (LogAsync != null)
-                await LogAsync($"Error: {ex.Message}");
+            LogAsync?.Invoke($"Error: {ex.Message}");
         }
         finally
         {
             IsEnabled = true;
         }
     }
-    
+
     private async Task LoadModsThumbnailAsync(string url)
     {
         var bitmap = await _thumbnailLoader.LoadThumbnail(url);
         ModsThumbnail = bitmap;
     }
-    
+
     /// <summary>
-    /// Save the download history to LiteDb history.db
+    ///     Save the download history to LiteDb history.db
     /// </summary>
     private async Task SaveHistoryAsync()
     {
@@ -162,8 +164,8 @@ public partial class HomeViewModel : ReactiveObject
     }
 
     /// <summary>
-    /// Once the user click download this method will execute much of what this app mainly does
-    /// So it just call the CmdRunner method with the corresponding ModID or AppID 
+    ///     Once the user click download this method will execute much of what this app mainly does
+    ///     So it just call the CmdRunner method with the corresponding ModID or AppID
     /// </summary>
     [RelayCommand]
     private async Task DownloadButton_OnClickAsync()
@@ -184,7 +186,7 @@ public partial class HomeViewModel : ReactiveObject
             ButtonContent = "Cancel";
 
             // Add log message to indicate start of process
-            await LogAsync?.Invoke("Starting download process...");
+            await LogAsync("Starting download process...");
 
             // Run the download process.
             await _runner.RunSteamCmd(_workshopId, _appId);
@@ -198,21 +200,21 @@ public partial class HomeViewModel : ReactiveObject
             // If it is a Stellaris mod and auto-install is enabled, trigger auto-install.
             if (AppId is "281990" && DownloadStatusNow is "Finished" && StellarisAutoInstallEnabled)
             {
-                await LogAsync?.Invoke($"Workshop item {WorkshopId} is a Stellaris mod");
+                await LogAsync($"Workshop item {WorkshopId} is a Stellaris mod");
                 await _stellarisAutoInstall.RunStellarisAutoInstallMods(DownloadedPath, WorkshopTitle);
                 DownloadedPath = $"\"{_stellarisAutoInstall.StellarisDocPath}\"";
             }
 
             if (_history.HistoryEnabled && _runner.Success) await SaveHistoryAsync();
 
-            await LogAsync?.Invoke("All processes finished.");
+            await LogAsync("All processes finished.");
             if (DownloadStatusNow is "Finished") ButtonContent = "Open";
         }
     }
-    
+
     /// <summary>
-    /// Method to cancel the download process by killing steamcmd process
-    /// if the download is finished it will change to open the mod download folder
+    ///     Method to cancel the download process by killing steamcmd process
+    ///     if the download is finished it will change to open the mod download folder
     /// </summary>
     [RelayCommand]
     private async Task CancelAndOpenAsync()
@@ -288,20 +290,21 @@ public partial class HomeViewModel : ReactiveObject
     private readonly SaveHistory _history;
     private readonly FolderPicker _folderPicker;
     private readonly ThumbnailLoader _thumbnailLoader;
+    private readonly SupportedGames _supportedGames;
 
     // Cancellation token shared for UI tasks.
     private CancellationTokenSource _cts = new();
 
     // Backing fields for properties.
     private string _workshopId;
-    private string _logsMessage = "Welcome to Padma version 1.0";
+    private string _logsMessage = "Welcome to Padma version 1.1";
     private string _appId;
     private string _buttonContent = "Cancel";
     private string _workshopTitle = "Created by Codecoo";
     private bool _isEnabled = true;
     private bool _cancelEnabled = true;
     private bool _downloadStarted;
-    private Bitmap _modsThumbnail;
+    private Bitmap? _modsThumbnail;
     private string? _workshopUrl;
     private string _fileSizeInfo;
     private bool _isVisible;
@@ -410,7 +413,7 @@ public partial class HomeViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _isEnabled, value);
     }
 
-    public Bitmap ModsThumbnail
+    public Bitmap? ModsThumbnail
     {
         get => _modsThumbnail;
         set => this.RaiseAndSetIfChanged(ref _modsThumbnail, value);

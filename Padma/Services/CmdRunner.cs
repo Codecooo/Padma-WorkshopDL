@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,18 +29,19 @@ public class CmdRunner
 
     public event Func<string, Task>? LogAsync;
 
-    /// <summary>
-    ///     Run steamcmd on bash, first check if the actual steamcmd is in the Padma directory if its not
-    ///     it will proceed to download steamcmd, then download the mod based on the WorkshopID and AppID
-    ///     If steamcmd found in the Padma directory it will send straight to download the mods
-    /// </summary>
-    /// <param name="workshopId"></param>
-    /// <param name="appId"></param>
     public async Task RunSteamCmd(string workshopId, string appId)
     {
-        SteamCmdDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Padma", "SteamCMD");
-        SteamCmdFilePath = Path.Combine(SteamCmdDirPath, "steamcmd.sh");
+        SteamCmdDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Padma", "steamcmd");
+
+        if (!OperatingSystem.IsWindows())
+        {
+            SteamCmdDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Padma", "steamcmd");
+        }
+
+        SteamCmdFilePath = OperatingSystem.IsWindows()
+            ? Path.Combine(SteamCmdDirPath, "steamcmd.exe")
+            : Path.Combine(SteamCmdDirPath, "steamcmd.sh");
         DownloadPath = _folderPicker.SelectedPath;
         try
         {
@@ -48,63 +51,76 @@ public class CmdRunner
                 await LogAsync($"Directory {SteamCmdDirPath} created.");
             }
 
-            string[] files = Directory.GetFiles(SteamCmdDirPath, "steamcmd.sh", SearchOption.AllDirectories);
-            if (files.Length > 0)
+            if (File.Exists(SteamCmdFilePath))
             {
-                await LogAsync($"Found steamcmd.sh in {string.Join(", ", files)}");
+                await LogAsync($"Found {Path.GetFileName(SteamCmdFilePath)} in {SteamCmdDirPath}");
                 await ModDownloader(workshopId, appId);
             }
             else
             {
-                // Start tracking SteamCMD installation progress
                 await SteamCmdDownloader();
                 await ModDownloader(workshopId, appId);
             }
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            await LogAsync($"Error during download: {ex.Message}");
+            await LogAsync($"Error trying to run SteamCmd: {e.Message}");
         }
     }
 
     /// <summary>
-    ///     Download steamcmd with bash based on official Valve instructions for linux x86-64
-    ///     I could honestly do this with HTTP client but since I already have bash method might as well incorporate it
+    ///     Download Steamcmd if no executable is found, in Windows it will use HttpClient and extract them because there is no
+    ///     reliable way to do it in Windows except this. For Linux/Mac it will use bash with commands. Mainly because we need
+    ///     to mark the shell script as executable.
     /// </summary>
     public async Task SteamCmdDownloader()
     {
-        var command =
-            $"cd {SteamCmdDirPath} && curl -qL \"https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz\" | tar zxvf - && chmod +x steamcmd.sh";
-        var arguments = $"-c \"{command}\"";
-        using var cts = new CancellationTokenSource();
-        await LogAsync("Installing steamcmd..");
+        var downloadCommandOrUrl = GetSteamCmdUrlOrCommand();
+        string archiveDownloadPath;
+        var extractionPath = SteamCmdDirPath;
+
         try
         {
-            await RunBash(arguments, cts.Token);
-            await LogAsync($"steamcmd successfully extracted to {SteamCmdDirPath}");
+            await LogAsync("No steamcmd detected, Downloading steamcmd now...");
+            await LogAsync("It take a while to update and download steamcmd, please wait...");
+            using var httpClient = new HttpClient();
+
+            if (OperatingSystem.IsWindows())
+            {
+                archiveDownloadPath = Path.Combine(SteamCmdDirPath, "steamcmd.zip");
+                await LogAsync($"Downloading steamcmd to {archiveDownloadPath}");
+                using (var stream = await httpClient.GetStreamAsync(downloadCommandOrUrl))
+                using (var fileStream = new FileStream(archiveDownloadPath, FileMode.Create, FileAccess.Write,
+                           FileShare.None, 8192, true))
+                {
+                    await stream.CopyToAsync(fileStream);
+                }
+
+                await LogAsync($"Successfully downloaded steamcmd to {archiveDownloadPath}");
+
+                await LogAsync($"Extracting steamcmd to {extractionPath}");
+                ZipFile.ExtractToDirectory(archiveDownloadPath, extractionPath, true);
+                File.Delete(archiveDownloadPath);
+                await LogAsync($"Successfully extracted steamcmd to {extractionPath}");
+            }
+            else // Linux or macOS, using bash so it could function properly and simple
+            {
+                var arguments = GetBashArgumentsForCommand(downloadCommandOrUrl);
+                await RunBash(arguments, CancellationToken.None);
+            }
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            await LogAsync($"Error: {ex.Message}");
+            await LogAsync($"Error during SteamCMD download/extraction: {e.Message}");
         }
     }
 
-
-    /// <summary>
-    ///     Download the mods with bash for steamcmd, it provides delay if the process encounter any timeout error
-    ///     usual for large size downloads. The default is 6 max attempts, this should suffice unless the user has really
-    ///     bad internet speed or the size is abnormally large.
-    /// </summary>
-    /// <param name="workshopId"></param>
-    /// <param name="appId"></param>
     public async Task ModDownloader(string workshopId, string appId)
     {
         var retryCount = 0;
         var downloadComplete = false;
         var timeoutErrorReceived = false;
 
-        // Download Mods with 6 retry attempts for timeout error and cancellationtoken if the download session is exceeding
-        // 30 minutes. Code will loop until it is either completed, exceeding 6 retry attempts or no timeout error received
         do
         {
             using var cts = new CancellationTokenSource();
@@ -112,13 +128,12 @@ public class CmdRunner
 
             try
             {
-                var arguments =
-                    $"-c \"\\\"{SteamCmdFilePath}\\\" +force_install_dir \\\"{DownloadPath}\\\" +login anonymous +workshop_download_item {appId} {workshopId} +quit\"";
+                // Format the command, quoting SteamCmdFilePath and DownloadPath
+                var command = GetSteamCmdCommand(workshopId, appId);
+                var arguments = GetBashArgumentsForCommand(command);
+                await LogAsync($"Running steamcmd with {arguments}");
+                await RunBash(arguments, cts.Token);
 
-                var downloadTask = RunBash(arguments, cts.Token);
-                await downloadTask;
-
-                // Check if download was successful
                 if (Success)
                 {
                     downloadComplete = true;
@@ -137,40 +152,45 @@ public class CmdRunner
                     await Task.Delay(TimeSpan.FromSeconds(RetryDelaySeconds));
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
                 timeoutErrorReceived = false;
-                await LogAsync($"Error during download: {ex.Message}");
+                await LogAsync($"Error during download: {e.Message}");
             }
         } while (!downloadComplete && retryCount < MaxRetries && timeoutErrorReceived);
 
         if (!downloadComplete)
         {
-            await LogAsync($"Failed to download after {MaxRetries} attempts");
+            await LogAsync($"Failed to download {workshopId}");
             Success = false;
         }
     }
 
-    /// <summary>
-    ///     Run bash method used for both downloading steamcmd and running steamcmd to download mods
-    ///     For logging add delay for 3 ms so it doesnt overwhelm the UI and freeze it. Just to do it
-    ///     Because steamcmd update freeze the UI.
-    /// </summary>
-    /// <param name="arguments"></param>
-    /// <param name="cancellationToken"></param>
-    /// <exception cref="OperationCanceledException"></exception>
+
     private async Task RunBash(string arguments, CancellationToken cancellationToken)
     {
         using var process = new Process();
-        process.StartInfo = new ProcessStartInfo
-        {
-            FileName = "/bin/bash",
-            Arguments = arguments,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
+        if (OperatingSystem.IsWindows())
+            process.StartInfo = new ProcessStartInfo
+            {
+                FileName = SteamCmdFilePath,
+                Arguments = arguments,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WorkingDirectory = SteamCmdDirPath
+            };
+        else
+            process.StartInfo = new ProcessStartInfo
+            {
+                FileName = "/bin/bash",
+                Arguments = arguments,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
 
         // Use 3 ms interval and StringBuilder for not freezing the UI
         var logsBuffer = new StringBuilder();
@@ -203,8 +223,7 @@ public class CmdRunner
                     logsBuffer.Append($"Output: {e.Data} ");
                 }
 
-                if (e.Data.Contains("Success. Downloaded"))
-                    Success = true;
+                if (e.Data.Contains("Success. Downloaded")) Success = true;
             }
         };
 
@@ -248,6 +267,44 @@ public class CmdRunner
         {
             logsBuffer.Append($"SteamCmd exited with code {process.ExitCode}");
         }
+    }
+
+    private string GetSteamCmdUrlOrCommand()
+    {
+        var downloadUrlOrCommand = string.Empty;
+        if (OperatingSystem.IsLinux())
+            downloadUrlOrCommand =
+                $"cd {SteamCmdDirPath} && curl -sqL \"https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz\" | tar zxvf - && chmod +x steamcmd.sh";
+        if (OperatingSystem.IsWindows())
+            downloadUrlOrCommand = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip";
+        if (OperatingSystem.IsMacOS())
+            downloadUrlOrCommand =
+                $"cd {SteamCmdDirPath} && curl -sqL \"https://steamcdn-a.akamaihd.net/client/installer/steamcmd_osx.tar.gz\" | tar zxvf - && chmod +x steamcmd.sh";
+        return downloadUrlOrCommand;
+    }
+
+    private string GetBashArgumentsForCommand(string command)
+    {
+        return OperatingSystem.IsWindows() ? command : $"-c \"{command}\"";
+    }
+
+    private string GetSteamCmdCommand(string workshopId, string appId)
+    {
+        if (OperatingSystem.IsWindows())
+            // Windows template: uses three placeholders.
+            return string.Format(
+                @"+force_install_dir ""{0}"" +login anonymous +workshop_download_item {1} {2} +quit",
+                DownloadPath,
+                appId,
+                workshopId);
+
+        // Linux/Mac template: uses four placeholders.
+        return string.Format(
+            @"""{0}"" +force_install_dir ""{1}"" +login anonymous +workshop_download_item {2} {3} +quit",
+            SteamCmdFilePath,
+            DownloadPath,
+            appId,
+            workshopId);
     }
 
     public async Task KillSteamCmd()

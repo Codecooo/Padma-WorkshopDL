@@ -22,6 +22,7 @@ public class DownloadProgressTracker : ReactiveObject
 
     public DownloadProgressTracker()
     {
+        // Track changes to appID and workshopID when user provides so we could track it with FileSystemWatcher
         this.WhenAnyValue(x => x.AppId, x => x.WorkshopId,
                 (appId, workshopId) => !string.IsNullOrWhiteSpace(appId) && !string.IsNullOrWhiteSpace(workshopId))
             .Where(valid => valid)
@@ -62,6 +63,14 @@ public class DownloadProgressTracker : ReactiveObject
         ProgressDebounceTimer = null;
     }
 
+    /// <summary>
+    /// Start tracking download when appID and workshopID are provided with FileSystemWatcher
+    /// First it would reset the download progress if it carried over, if steamcmd is installed
+    /// for the first time it will create the workshop download folder so it could track it
+    /// Then it will attach folder watcher by calling AttachDownloadWatcher
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="workshopId"></param>
     public void StartTrackingDownload(string appId, string workshopId)
     {
         if (_isTracking) Reset();
@@ -100,6 +109,12 @@ public class DownloadProgressTracker : ReactiveObject
         FolderWatcher.EnableRaisingEvents = true;
     }
 
+    /// <summary>
+    /// Attach FileSystemWatcher on the download folder and watch for any change in all of its
+    /// directories. It will also implement a delay mechanism of 50ms so it is responsive enough while
+    /// not overwhelm the computer with too much disk operations.
+    /// </summary>
+    /// <param name="folderPath"></param>
     private void AttachDownloadWatcher(string folderPath)
     {
         CurrentSize = Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories)
@@ -127,6 +142,10 @@ public class DownloadProgressTracker : ReactiveObject
         ProgressDebounceTimer?.Change(50, Timeout.Infinite);
     }
 
+    /// <summary>
+    /// Simply recalculate progress by retrieving all of the download folder current size
+    /// and divide it by the Total size acquired when calling SteamwebApi in AppIdFinder class
+    /// </summary>
     private async Task RecalculateProgress()
     {
         try
@@ -145,9 +164,9 @@ public class DownloadProgressTracker : ReactiveObject
                 ProgressUpdated?.Invoke(downloadPercentage);
             }
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            await LogAsync($"Error recalculating download progress: {ex.Message}");
+            await LogAsync($"Error recalculating download progress: {e.Message}");
         }
     }
 }

@@ -40,7 +40,9 @@ public partial class HistoryViewModel : ReactiveObject
     [RelayCommand]
     private void OpenDownloads(LiteDbHistory selectedItems)
     {
-        Process.Start("xdg-open", $"{selectedItems.DownloadLocation}");
+        if (OperatingSystem.IsLinux()) Process.Start("xdg-open", $"{selectedItems.DownloadLocation}");
+        if (OperatingSystem.IsWindows()) Process.Start("explorer", $"{selectedItems.DownloadLocation}");
+        if (OperatingSystem.IsMacOS()) Process.Start("open", $"{selectedItems.DownloadLocation}");
     }
 
     [RelayCommand]

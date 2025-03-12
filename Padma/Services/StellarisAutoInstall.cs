@@ -14,10 +14,16 @@ public class StellarisAutoInstall
 
     public StellarisAutoInstall()
     {
-        StellarisDocPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Paradox Interactive",
-            "Stellaris", "mod"
-        );
+        if (OperatingSystem.IsWindows())
+            StellarisDocPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Paradox Interactive",
+                "Stellaris", "mod"
+            );
+        else
+            StellarisDocPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Paradox Interactive",
+                "Stellaris", "mod"
+            );
     }
 
     public event Func<string, Task>? LogAsync;
@@ -60,9 +66,9 @@ public class StellarisAutoInstall
             await LogAsync($"Installing mods to {StellarisDocPath}");
             await MoveStellarisMods(modsDownloadPath, workshopTitle);
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            await LogAsync($"Error during mod installation: {ex.Message}");
+            await LogAsync($"Error during mod installation: {e.Message}");
             throw;
         }
     }
@@ -89,18 +95,19 @@ public class StellarisAutoInstall
                     ZipFile.ExtractToDirectory(zipFile, downloadPath, true);
                     File.Delete(zipFile);
                 }
-                catch (InvalidDataException ex) when (ex.Message.Contains("bzip2"))
+                catch (InvalidDataException e) when (e.Message.Contains("bzip2"))
                 {
                     // If it's a bzip2 error, log it and continue - the content might already be extracted
-                    await LogAsync($"Skipping bzip2 compressed file {zipFile} - content may already be extracted. If not install it manually");
+                    await LogAsync(
+                        $"Skipping bzip2 compressed file {zipFile} - content may already be extracted. If not install it manually");
                 }
                 catch (UnauthorizedAccessException)
                 {
                     await LogAsync($"No permission to access {zipFile}");
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    await LogAsync($"Error extracting {zipFile}: {ex.Message}");
+                    await LogAsync($"Error extracting {zipFile}: {e.Message}");
                 }
 
             // Find and process descriptor
@@ -159,14 +166,14 @@ public class StellarisAutoInstall
 
                 await LogAsync($"Successfully installed mod: {modTitle}");
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException e)
             {
-                await LogAsync($"Permission denied while installing mod: {ex.Message}");
+                await LogAsync($"Permission denied while installing mod: {e.Message}");
             }
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            await LogAsync($"Error moving mod files: {ex.Message}");
+            await LogAsync($"Error moving mod files: {e.Message}");
         }
     }
 }

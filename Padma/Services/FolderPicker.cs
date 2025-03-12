@@ -13,11 +13,13 @@ namespace Padma.Services;
 
 public class FolderPicker
 {
-    private readonly string _settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+    private readonly string _settingsPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "Padma", "appsettings.json");
 
     public FolderPicker()
     {
+        if (OperatingSystem.IsWindows()) _settingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
         InitializeFromSettings();
     }
 
@@ -26,32 +28,36 @@ public class FolderPicker
     public event Func<string, Task>? LogAsync;
 
     /// <summary>
-    /// Initialize the download location based on the appsettings.json 
+    ///     Initialize the download location based on the appsettings.json
     /// </summary>
     private void InitializeFromSettings()
     {
+        var defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Padma");
+
+        if (!OperatingSystem.IsWindows())
+            defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Padma");
+
         try
         {
-            var defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Padma");
             var settings = JObject.Parse(File.ReadAllText(_settingsPath));
             var downloadPath = settings["download_path"]?.ToString();
 
             SelectedPath = downloadPath == "default" ? defaultPath : downloadPath ?? defaultPath;
+            SelectedPath = SelectedPath.TrimEnd(Path.DirectorySeparatorChar);
             FolderPathView = Path.Combine(SelectedPath, "steamapps", "workshop", "content");
         }
         catch
         {
             // Fallback to default if settings file can't be read
-            SelectedPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Padma");
+            SelectedPath = defaultPath.TrimEnd(Path.DirectorySeparatorChar);
             FolderPathView = Path.Combine(SelectedPath, "steamapps", "workshop", "content");
         }
     }
 
     public void UpdatePaths(string newSelectedPath)
     {
-        SelectedPath = newSelectedPath;
+        SelectedPath = newSelectedPath.TrimEnd(Path.DirectorySeparatorChar);
         FolderPathView = Path.Combine(SelectedPath, "steamapps", "workshop", "content");
     }
 
@@ -62,7 +68,7 @@ public class FolderPicker
             var folder = await DoOpenFilePickerAsync();
             if (folder != null && folder.Any())
             {
-                SelectedPath = folder.First().Path.LocalPath;
+                SelectedPath = folder.First().Path.LocalPath.TrimEnd(Path.DirectorySeparatorChar);
                 FolderPathView = Path.Combine(SelectedPath, "steamapps", "workshop", "content");
             }
         }
@@ -76,7 +82,9 @@ public class FolderPicker
     {
         try
         {
-            Process.Start("xdg-open", $"{folderPath}");
+            if (OperatingSystem.IsLinux()) Process.Start("xdg-open", $"{folderPath}");
+            if (OperatingSystem.IsWindows()) Process.Start("explorer", $"{folderPath}");
+            if (OperatingSystem.IsMacOS()) Process.Start("open", $"{folderPath}");
         }
         catch (Exception e)
         {
@@ -85,7 +93,7 @@ public class FolderPicker
     }
 
     /// <summary>
-    /// Open FolderPicker storage method from Avalonia so user could choose desired folder path
+    ///     Open FolderPicker storage method from Avalonia so user could choose desired folder path
     /// </summary>
     /// <returns></returns>
     private async Task<IReadOnlyList<IStorageFolder>?> DoOpenFilePickerAsync()

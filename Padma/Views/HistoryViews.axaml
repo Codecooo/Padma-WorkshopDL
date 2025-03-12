@@ -29,7 +29,7 @@
             </SplitButton>
         </StackPanel>
         <Grid Grid.Row="2">
-            
+
             <!-- The list for Downloads Histoty -->
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden">
                 <ItemsControl ItemsSource="{Binding FilteredHistory}">

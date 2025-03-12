@@ -34,7 +34,8 @@ public partial class MainWindow : Window
             thumbnailLoader,
             downloadProgressTracker,
             folderpicker,
-            stellarisAutoInstall
+            stellarisAutoInstall,
+            supportedGames
         );
         var historyViewModel = new HistoryViewModel(saveHistory);
         var settingsViewModel = new SettingsViewModel(saveHistory, folderpicker, homeViewModel);

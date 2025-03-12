@@ -16,7 +16,7 @@
         <TextBlock Grid.Row="3" VerticalAlignment="Center" IsVisible="{Binding NoGamesFound}"
                    Text="Nothing to show here" Foreground="White" Opacity="0.3" FontSize="26"
                    HorizontalAlignment="Center" />
-        
+
         <!-- The list for all supported games -->
         <ScrollViewer Grid.Row="3" HorizontalScrollBarVisibility="Disabled">
             <StackPanel>

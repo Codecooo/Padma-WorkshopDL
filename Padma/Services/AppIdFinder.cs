@@ -61,7 +61,8 @@ public class AppIdFinder
             {
                 await LogAsync($"Finding AppId for workshop item {WorkshopId}...");
                 // Send the request to SteamWebAPI
-                var response = await client.PostAsync(
+                var response = await client.PostAsync
+                (
                     "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/",
                     formData
                 );
@@ -69,10 +70,9 @@ public class AppIdFinder
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-
                     var data = JObject.Parse(json);
 
-                    // Extract the AppID from the JSON response
+                    // Extract the AppID, title, thumbnail, and filesize from the JSON response
                     var appId = data["response"]?["publishedfiledetails"]?[0]?["consumer_app_id"]?.Value<string>();
                     var modTitle = data["response"]?["publishedfiledetails"]?[0]?["title"]?.Value<string>();
                     var thumbnailUrl = data["response"]?["publishedfiledetails"]?[0]?["preview_url"]?.Value<string>();
@@ -87,21 +87,23 @@ public class AppIdFinder
                         FileSizeBytes = (long)fileSize;
                         _fileSize = (double)(fileSize / 1_048_576.0); // Convert to MB
 
-                        // Calculate the filesize in bytes to readable format GB, MB or KB
-                        if (Math.Floor(_fileSize) >= 1000)
+                        switch (Math.Floor(_fileSize))
                         {
-                            _fileSize /= 1024;
-                            FileSizeInfo =
-                                $"{_fileSize:F1} GB"; // Calculate to GB if the integral value is larger than 1000 MB
-                        }
-                        else if (Math.Floor(_fileSize) < 1)
-                        {
-                            var fileSizeKb = FileSizeBytes / 1024.0;
-                            FileSizeInfo = $"{fileSizeKb:F1} KB"; // Calculate to KB if the value is less than 1 MB 
-                        }
-                        else
-                        {
-                            FileSizeInfo = $"{_fileSize:F1} MB"; // If all conditions fail revert back to MB
+                            // Calculate the filesize in bytes to readable format GB, MB or KB
+                            case >= 1000:
+                                _fileSize /= 1024;
+                                FileSizeInfo =
+                                    $"{_fileSize:F1} GB"; // Calculate to GB if the integral value is larger than 1000 MB
+                                break;
+                            case < 1:
+                            {
+                                var fileSizeKb = FileSizeBytes / 1024.0;
+                                FileSizeInfo = $"{fileSizeKb:F1} KB"; // Calculate to KB if the value is less than 1 MB 
+                                break;
+                            }
+                            default:
+                                FileSizeInfo = $"{_fileSize:F1} MB"; // If all conditions fail revert back to MB
+                                break;
                         }
 
                         await LogAsync($"Found AppId {AppId} for workshop item {WorkshopId}");
