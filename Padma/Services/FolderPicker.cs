@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
-using Newtonsoft.Json.Linq;
 
 namespace Padma.Services;
 
@@ -40,7 +40,7 @@ public class FolderPicker
 
         try
         {
-            var settings = JObject.Parse(File.ReadAllText(_settingsPath));
+            var settings = JsonNode.Parse(File.ReadAllText(_settingsPath));
             var downloadPath = settings["download_path"]?.ToString();
 
             SelectedPath = downloadPath == "default" ? defaultPath : downloadPath ?? defaultPath;

@@ -5,7 +5,8 @@
              xmlns:vm="clr-namespace:Padma.ViewModels;assembly=Padma"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:SupportedGamesViewModel"
-             x:Class="Padma.Views.SupportedGamesViews">
+             x:Class="Padma.Views.SupportedGamesViews"
+             x:CompileBindings="True">
     <Grid RowDefinitions="Auto, Auto, Auto, *" Background="#070A0B">
         <Label Grid.Row="0" FontSize="28" VerticalAlignment="Top" HorizontalAlignment="Center"
                Content="Supported Games" Foreground="Gray" />

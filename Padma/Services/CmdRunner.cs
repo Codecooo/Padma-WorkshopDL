@@ -15,20 +15,13 @@ public class CmdRunner
     private const int MaxRetries = 6;
     private const int RetryDelaySeconds = 10;
     private const int DownloadTimeoutMinutes = 30;
-    private readonly FolderPicker _folderPicker;
 
-    public string DownloadPath = string.Empty;
     public string SteamCmdDirPath = string.Empty;
     public string SteamCmdFilePath = string.Empty;
     public bool Success;
 
-    public CmdRunner(FolderPicker folderPicker)
-    {
-        _folderPicker = folderPicker;
-    }
-
     public event Func<string, Task>? LogAsync;
-    
+
     /// <summary>
     ///     Run steamcmd on bash, first check if the actual steamcmd is in the Padma directory if its not
     ///     it will proceed to download steamcmd, then download the mod based on the WorkshopID and AppID
@@ -36,7 +29,8 @@ public class CmdRunner
     /// </summary>
     /// <param name="workshopId"></param>
     /// <param name="appId"></param>
-    public async Task RunSteamCmd(string workshopId, string appId)
+    /// <param name="downloadPath"></param>
+    public async Task RunSteamCmd(string workshopId, string appId, string downloadPath)
     {
         SteamCmdDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Padma", "steamcmd");
 
@@ -49,7 +43,7 @@ public class CmdRunner
         SteamCmdFilePath = OperatingSystem.IsWindows()
             ? Path.Combine(SteamCmdDirPath, "steamcmd.exe")
             : Path.Combine(SteamCmdDirPath, "steamcmd.sh");
-        DownloadPath = _folderPicker.SelectedPath;
+        
         try
         {
             if (!Directory.Exists(SteamCmdDirPath))
@@ -61,12 +55,12 @@ public class CmdRunner
             if (File.Exists(SteamCmdFilePath))
             {
                 await LogAsync($"Found {Path.GetFileName(SteamCmdFilePath)} in {SteamCmdDirPath}");
-                await ModDownloader(workshopId, appId);
+                await ModDownloader(workshopId, appId, downloadPath);
             }
             else
             {
                 await SteamCmdDownloader();
-                await ModDownloader(workshopId, appId);
+                await ModDownloader(workshopId, appId, downloadPath);
             }
         }
         catch (Exception e)
@@ -97,8 +91,7 @@ public class CmdRunner
                 archiveDownloadPath = Path.Combine(SteamCmdDirPath, "steamcmd.zip");
                 await LogAsync($"Downloading steamcmd to {archiveDownloadPath}");
                 using (var stream = await httpClient.GetStreamAsync(downloadCommandOrUrl))
-                using (var fileStream = new FileStream(archiveDownloadPath, FileMode.Create, FileAccess.Write,
-                           FileShare.None, 8192, true))
+                using (var fileStream = new FileStream(archiveDownloadPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
                 {
                     await stream.CopyToAsync(fileStream);
                 }
@@ -129,7 +122,7 @@ public class CmdRunner
     /// </summary>
     /// <param name="workshopId"></param>
     /// <param name="appId"></param>
-    public async Task ModDownloader(string workshopId, string appId)
+    public async Task ModDownloader(string workshopId, string appId, string downloadPath)
     {
         var retryCount = 0;
         var downloadComplete = false;
@@ -143,7 +136,7 @@ public class CmdRunner
             try
             {
                 // Format the command, quoting SteamCmdFilePath and DownloadPath
-                var command = GetSteamCmdCommand(workshopId, appId);
+                var command = GetSteamCmdCommand(workshopId, appId, downloadPath);
                 var arguments = GetBashArgumentsForCommand(command);
                 await LogAsync($"Running steamcmd with {arguments}");
                 await RunTerminal(arguments, cts.Token);
@@ -193,6 +186,7 @@ public class CmdRunner
     {
         using var process = new Process();
         if (OperatingSystem.IsWindows())
+        {
             process.StartInfo = new ProcessStartInfo
             {
                 FileName = SteamCmdFilePath,
@@ -203,7 +197,9 @@ public class CmdRunner
                 CreateNoWindow = true,
                 WorkingDirectory = SteamCmdDirPath
             };
+        }
         else
+        {
             process.StartInfo = new ProcessStartInfo
             {
                 FileName = "/bin/bash",
@@ -213,6 +209,7 @@ public class CmdRunner
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
+        }
 
         // Use 3 ms interval and StringBuilder for not freezing the UI
         var logsBuffer = new StringBuilder();
@@ -310,13 +307,13 @@ public class CmdRunner
         return OperatingSystem.IsWindows() ? command : $"-c \"{command}\"";
     }
 
-    private string GetSteamCmdCommand(string workshopId, string appId)
+    private string GetSteamCmdCommand(string workshopId, string appId, string downloadPath)
     {
         if (OperatingSystem.IsWindows())
             // Windows template: uses three placeholders.
             return string.Format(
                 @"+force_install_dir ""{0}"" +login anonymous +workshop_download_item {1} {2} +quit",
-                DownloadPath,
+                downloadPath,
                 appId,
                 workshopId);
 
@@ -324,7 +321,7 @@ public class CmdRunner
         return string.Format(
             @"""{0}"" +force_install_dir ""{1}"" +login anonymous +workshop_download_item {2} {3} +quit",
             SteamCmdFilePath,
-            DownloadPath,
+            downloadPath,
             appId,
             workshopId);
     }

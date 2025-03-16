@@ -6,7 +6,7 @@
         mc:Ignorable="d"
         d:DesignWidth="900"
         d:DesignHeight="450"
-        Height="490"
+        Height="525"
         Width="900"
         CanResize="False"
         xmlns:views="clr-namespace:Padma.Views"
@@ -14,9 +14,10 @@
         x:Class="Padma.Views.MainWindow"
         Icon="/Assets/logo.png"
         Title="Padma"
-        x:DataType="viewModels:MainWindowViewModel">
+        x:DataType="viewModels:MainWindowViewModel"
+        x:CompileBindings="True">
     <!-- Sidebar Menu -->
-    <TabControl TabStripPlacement="Left">
+    <TabControl Classes="MainWindowTab" TabStripPlacement="Left">
         <!-- Use a DockPanel to arrange headers -->
         <TabControl.ItemsPanel>
             <ItemsPanelTemplate>
@@ -41,19 +42,19 @@
         </TabControl.Resources>
 
         <!-- TabItems -->
-        <TabItem ToolTip.Tip="Home" ToolTip.Placement="Right" ToolTip.VerticalOffset="0" ToolTip.ShowDelay="240"
+        <TabItem Classes="MainWindowTabItem" ToolTip.Tip="Home" ToolTip.Placement="Right" ToolTip.VerticalOffset="0" ToolTip.ShowDelay="240"
                  HeaderTemplate="{StaticResource HomeTemplate}" DockPanel.Dock="Top">
             <views:HomeViews DataContext="{Binding HomeViewModel}" />
         </TabItem>
-        <TabItem ToolTip.Tip="Download History" ToolTip.Placement="Right" ToolTip.ShowDelay="240"
+        <TabItem Classes="MainWindowTabItem" ToolTip.Tip="Download History" ToolTip.Placement="Right" ToolTip.ShowDelay="240"
                  ToolTip.VerticalOffset="0" HeaderTemplate="{StaticResource HistoryTemplate}" DockPanel.Dock="Top">
             <views:HistoryViews DataContext="{Binding HistoryViewModel}" />
         </TabItem>
-        <TabItem ToolTip.Tip="Supported Games" ToolTip.Placement="Right" ToolTip.ShowDelay="240"
+        <TabItem Classes="MainWindowTabItem" ToolTip.Tip="Supported Games" ToolTip.Placement="Right" ToolTip.ShowDelay="240"
                  ToolTip.VerticalOffset="0" HeaderTemplate="{StaticResource GamesTemplate}" DockPanel.Dock="Top">
             <views:SupportedGamesViews DataContext="{Binding SupportedGamesViewModel}" />
         </TabItem>
-        <TabItem ToolTip.Tip="Settings" ToolTip.Placement="Right" ToolTip.ShowDelay="240" ToolTip.VerticalOffset="0"
+        <TabItem Classes="MainWindowTabItem" ToolTip.Tip="Settings" ToolTip.Placement="Right" ToolTip.ShowDelay="240" ToolTip.VerticalOffset="0"
                  HeaderTemplate="{StaticResource SettingsTemplate}" DockPanel.Dock="Bottom">
             <views:SettingsViews DataContext="{Binding SettingsViewModel}" />
         </TabItem>

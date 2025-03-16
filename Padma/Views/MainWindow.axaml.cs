@@ -15,15 +15,17 @@ public partial class MainWindow : Window
 
     private static MainWindowViewModel CreateDesignTimeViewModel()
     {
-        // Create mock services first
+        // Create mock services 
         var downloadProgressTracker = new DownloadProgressTracker();
         var folderpicker = new FolderPicker();
         var saveHistory = new SaveHistory();
         var supportedGames = new SupportedGames();
         var appIdFinder = new AppIdFinder(downloadProgressTracker);
-        var cmdRunner = new CmdRunner(folderpicker);
+        var cmdRunner = new CmdRunner();
         var thumbnailLoader = new ThumbnailLoader();
         var stellarisAutoInstall = new StellarisAutoInstall();
+        var downloadMods = new DownloadMods(cmdRunner, appIdFinder, downloadProgressTracker);
+        var downloadProcessor = new DownloadProcessor(downloadMods, appIdFinder, stellarisAutoInstall, saveHistory, folderpicker);
 
         // Create ViewModels with dependencies
         var supportedGamesViewModel = new SupportedGamesViewModel(supportedGames);
@@ -35,7 +37,8 @@ public partial class MainWindow : Window
             downloadProgressTracker,
             folderpicker,
             stellarisAutoInstall,
-            supportedGames
+            supportedGames,
+            downloadProcessor
         );
         var historyViewModel = new HistoryViewModel(saveHistory);
         var settingsViewModel = new SettingsViewModel(saveHistory, folderpicker, homeViewModel);

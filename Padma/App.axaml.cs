@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -49,6 +50,8 @@ public class App : Application
         services.AddSingleton<ThumbnailLoader>();
         services.AddSingleton<FolderPicker>();
         services.AddSingleton<StellarisAutoInstall>();
+        services.AddSingleton<DownloadMods>();
+        services.AddSingleton<DownloadProcessor>();
 
         // Register AppIdFinder after DownloadProgressTracker
         services.AddSingleton<AppIdFinder>();
@@ -64,6 +67,7 @@ public class App : Application
         services.AddTransient<MainWindow>();
     }
 
+    [RequiresUnreferencedCode("Calls Avalonia.Data.Core.Plugins.BindingPlugins.DataValidators")]
     private void DisableAvaloniaDataAnnotationValidation()
     {
         var dataValidationPluginsToRemove =

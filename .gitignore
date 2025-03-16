@@ -1,7 +1,7 @@
 ### Example user template template
 ### Example user template
+Dockerfile
 .dockerignore
-*.DotSettings.user
 
 # IntelliJ project files
 .idea
@@ -408,4 +408,3 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-/Padma.csproj

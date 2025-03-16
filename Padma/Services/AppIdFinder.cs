@@ -1,29 +1,27 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace Padma.Services;
 
 public class AppIdFinder
 {
     private readonly DownloadProgressTracker _downloadProgressTracker;
-    private double _fileSize;
 
-    // Proper constructor injection
     public AppIdFinder(DownloadProgressTracker downloadProgressTracker)
     {
         _downloadProgressTracker = downloadProgressTracker;
     }
 
-    public string AppId { get; private set; }
-    public string WorkshopId { get; private set; } = string.Empty;
-    public string ModTitle { get; private set; }
-    public string ThumbnailUrl { get; private set; }
-    public long FileSizeBytes { get; private set; }
-    public string FileSizeInfo { get; private set; }
+    public string AppId;
+    public string WorkshopId = string.Empty;
+    public string ModTitle;
+    public string ThumbnailUrl;
+    public long FileSizeBytes;
+    public string FileSizeInfo;
     public event Func<string, Task>? LogAsync;
 
     public async Task ExtractWorkshopId(string workshopUrl)
@@ -70,61 +68,56 @@ public class AppIdFinder
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    var data = JObject.Parse(json);
+                    var data = JsonNode.Parse(json);
 
                     // Extract the AppID, title, thumbnail, and filesize from the JSON response
-                    var appId = data["response"]?["publishedfiledetails"]?[0]?["consumer_app_id"]?.Value<string>();
-                    var modTitle = data["response"]?["publishedfiledetails"]?[0]?["title"]?.Value<string>();
-                    var thumbnailUrl = data["response"]?["publishedfiledetails"]?[0]?["preview_url"]?.Value<string>();
-                    var fileSize = data["response"]?["publishedfiledetails"]?[0]?["file_size"]?.Value<long>();
-                    if (!string.IsNullOrWhiteSpace(appId) && !string.IsNullOrWhiteSpace(modTitle) &&
-                        !string.IsNullOrWhiteSpace(thumbnailUrl) && fileSize > 0)
+                    var appId = data["response"]?["publishedfiledetails"]?[0]?["consumer_app_id"]?.GetValue<int>();
+                    var modTitle = data["response"]?["publishedfiledetails"]?[0]?["title"]?.GetValue<string>();
+                    var thumbnailUrl = data["response"]?["publishedfiledetails"]?[0]?["preview_url"]?.GetValue<string>();
+                    var fileSize = data["response"]?["publishedfiledetails"]?[0]?["file_size"]?.GetValue<string>();
+                    if (appId != null && !string.IsNullOrWhiteSpace(modTitle) &&
+                        !string.IsNullOrWhiteSpace(thumbnailUrl) && !string.IsNullOrWhiteSpace(fileSize))
                     {
-                        // Assign the required information like ModTitle, AppID, thumbnail, and FileSize in bytes
+                        // Assign the required information like ModTitle, AppID, thumbnail, and FileSize
                         ModTitle = modTitle;
-                        AppId = appId;
+                        AppId = appId.ToString();
                         ThumbnailUrl = thumbnailUrl;
-                        FileSizeBytes = (long)fileSize;
-                        _fileSize = (double)(fileSize / 1_048_576.0); // Convert to MB
-
-                        switch (Math.Floor(_fileSize))
-                        {
-                            // Calculate the filesize in bytes to readable format GB, MB or KB
-                            case >= 1000:
-                                _fileSize /= 1024;
-                                FileSizeInfo =
-                                    $"{_fileSize:F1} GB"; // Calculate to GB if the integral value is larger than 1000 MB
-                                break;
-                            case < 1:
-                            {
-                                var fileSizeKb = FileSizeBytes / 1024.0;
-                                FileSizeInfo = $"{fileSizeKb:F1} KB"; // Calculate to KB if the value is less than 1 MB 
-                                break;
-                            }
-                            default:
-                                FileSizeInfo = $"{_fileSize:F1} MB"; // If all conditions fail revert back to MB
-                                break;
-                        }
+                        FileSizeBytes = Convert.ToInt64(fileSize);
+                        FileSizeInfo = CalculateFileSize(FileSizeBytes);
 
                         await LogAsync($"Found AppId {AppId} for workshop item {WorkshopId}");
-                    }
-                    else
-                    {
-                        await LogAsync("AppID not found in response.");
-                        AppId = "0";
                     }
                 }
                 else
                 {
-                    await LogAsync(
-                        $"API request failed with status code {response.StatusCode}: {response.ReasonPhrase}");
+                    await LogAsync($"API request failed with status code {response.StatusCode}: {response.ReasonPhrase}");
                 }
             }
             catch (Exception ex)
             {
-                // Handle errors (e.g., network issues)
                 await LogAsync($"Error finding AppID or Filesize: {ex.Message}");
             }
+        }
+    }
+
+    public string CalculateFileSize(long fileSizeBytes)
+    {
+        double filesize;
+        filesize = fileSizeBytes / 1_048_576.0; // Convert to MB
+
+        switch (Math.Floor(filesize))
+        {
+            // Calculate the filesize in bytes to readable format GB, MB or KB
+            case >= 1000:
+                filesize /= 1024;
+                return $"{filesize:F1} GB"; // Calculate to GB if the integral value is larger than 1000 MB
+            case < 1:
+            {
+                var fileSizeKb = FileSizeBytes / 1024.0;
+                return $"{fileSizeKb:F1} KB"; // Calculate to KB if the value is less than 1 MB 
+            }
+            default:
+                return $"{filesize:F1} MB"; // If all conditions fail revert back to MB
         }
     }
 

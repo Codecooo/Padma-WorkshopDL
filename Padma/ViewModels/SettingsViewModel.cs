@@ -1,9 +1,9 @@
 using System;
 using System.IO;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Padma.Models;
 using Padma.Services;
 using ReactiveUI;
@@ -12,11 +12,12 @@ namespace Padma.ViewModels;
 
 public partial class SettingsViewModel : ReactiveObject
 {
+    public AppSettingsJsonClass? AppSettingsJson;
     private readonly string _appSettingsPath;
     private readonly FolderPicker _folderPicker;
     private readonly HomeViewModel _homeViewModel;
     private readonly SaveHistory _saveHistory;
-    private readonly JObject? _settings;
+    private readonly JsonNode? _settings;
     private bool _disableHistoryChecked;
     private bool _disableStellarisInstallChecked;
     private string _folderPathView;
@@ -39,7 +40,7 @@ public partial class SettingsViewModel : ReactiveObject
 
         // Read the app settings from file 
         var appSettingsContent = File.ReadAllText(_appSettingsPath);
-        _settings = JObject.Parse(appSettingsContent);
+        _settings = JsonNode.Parse(appSettingsContent);
         ReadAppSettings();
     }
 
@@ -71,14 +72,14 @@ public partial class SettingsViewModel : ReactiveObject
     private void CreateAppSettings()
     {
         File.Create(_appSettingsPath).Dispose();
-        var newAppSettings = new
+        AppSettingsJson = new ()
         {
-            history_enabled = "true",
-            download_path = "default",
-            auto_install_stellaris_mods = "true"
+            HistoryEnabled = true,
+            DownloadPath = "default",
+            AutoInstallStellarisMods = true
         };
-        var json = JsonConvert.SerializeObject(newAppSettings, Formatting.Indented);
-        File.WriteAllText(_appSettingsPath, json);
+        string jsonString = JsonSerializer.Serialize(AppSettingsJson, JsonSerializerGenerator.Default.AppSettingsJsonClass);
+        File.WriteAllText(_appSettingsPath, jsonString);
     }
 
     [RelayCommand]
@@ -158,4 +159,11 @@ public partial class SettingsViewModel : ReactiveObject
     }
 
     #endregion
+}
+
+public class AppSettingsJsonClass
+{
+    public bool HistoryEnabled { get; set; }
+    public bool AutoInstallStellarisMods { get; set; }
+    public string DownloadPath { get; set; }
 }

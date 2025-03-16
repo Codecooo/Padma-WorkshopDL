@@ -1,7 +1,7 @@
-using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Padma.ViewModels;
+using Padma.Views;
 
 namespace Padma;
 
@@ -12,12 +12,18 @@ public class ViewLocator : IDataTemplate
         if (param is null)
             return null;
 
-        var name = param.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
-        var type = Type.GetType(name);
-
-        if (type != null) return (Control)Activator.CreateInstance(type)!;
-
-        return new TextBlock { Text = "Not Found: " + name };
+        if (param is HomeViewModel)
+            return new HomeViews();
+        if (param is MainWindowViewModel)
+            return new MainWindow();
+        if (param is SettingsViewModel)
+            return new SettingsViews();
+        if (param is SupportedGamesViewModel)
+            return new SupportedGamesViews();
+        if(param is HistoryViewModel)
+            return new HistoryViews();
+        
+        return new TextBlock { Text = $"Not Found: {param.GetType().FullName}" };
     }
 
     public bool Match(object? data)

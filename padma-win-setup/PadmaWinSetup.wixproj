@@ -17,9 +17,6 @@
     <Content Include="productVersion.wxi" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.1" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Padma\Padma.csproj" />
   </ItemGroup>
 </Project>

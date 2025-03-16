@@ -7,7 +7,7 @@
     </Design.PreviewWith>
 
     <!-- Add Styles Here -->
-    <Style Selector="TabItem">
+    <Style Selector="TabItem.MainWindowTabItem">
         <Setter Property="Template">
             <ControlTemplate>
                 <Grid Name="PART_Root">
@@ -27,7 +27,7 @@
             </ControlTemplate>
         </Setter>
     </Style>
-    <Style Selector="TabControl">
+    <Style Selector="TabControl.MainWindowTab">
         <Setter Property="Background" Value="#161C1E" />
         <Setter Property="BorderThickness" Value="0" />
     </Style>

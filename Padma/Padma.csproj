@@ -3,10 +3,13 @@
         <OutputType>WinExe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <ISAotCompatible>true</ISAotCompatible>
+<!--        <PublishAot>true</PublishAot>-->
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+<!--        <TrimMode>link</TrimMode>-->
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,9 +29,20 @@
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1"/>
         <PackageReference Include="LiteDB" Version="5.0.21"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.1"/>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <PackageReference Include="ReactiveUI" Version="20.1.63"/>
     </ItemGroup>
+
+<!--    <ItemGroup>-->
+<!--        &lt;!&ndash; Control the trimming configuration for Litedb &ndash;&gt;-->
+<!--        <RdXmlFile Include="rd.xml" />-->
+<!--    </ItemGroup>-->
+
+<!--    <ItemGroup>-->
+<!--        &lt;!&ndash; Preserve Avalonia and LiteDB types for reflection &ndash;&gt;-->
+<!--        <TrimmerRootAssembly Include="Avalonia.Themes.Fluent" />-->
+<!--        <TrimmerRootAssembly Include="LiteDB" />-->
+<!--        <TrimmableAssembly Remove="LiteDB" />-->
+<!--    </ItemGroup>-->
 
     <ItemGroup>
         <UpToDateCheckInput Remove="Styles\HomeViewStlyes.axaml"/>
@@ -39,11 +53,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="LiteDB\history.db">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
-        <None Update="LiteDB\list_supported_games.db">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <None Update="data\list_supported_games.db">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
 

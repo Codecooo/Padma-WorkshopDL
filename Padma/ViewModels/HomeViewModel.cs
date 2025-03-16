@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Reactive.Linq;
@@ -23,7 +24,8 @@ public partial class HomeViewModel : ReactiveObject
         DownloadProgressTracker downloadTracker,
         FolderPicker folderPicker,
         StellarisAutoInstall stellarisAutoInstall,
-        SupportedGames supportedGames)
+        SupportedGames supportedGames,
+        DownloadProcessor downloadProcessor)
     {
         _history = history;
         _folderPicker = folderPicker;
@@ -33,9 +35,11 @@ public partial class HomeViewModel : ReactiveObject
         _downloadTracker = downloadTracker;
         _stellarisAutoInstall = stellarisAutoInstall;
         _supportedGames = supportedGames;
+        _downloadProcessor = downloadProcessor;
 
         // Subscribe to progress updates in DownloadProgressTracker.
         _downloadTracker.ProgressUpdated += progress => DownloadProgress = progress;
+        
 
         // Auto-clear download bar when download finish or failed.
         this.WhenAnyValue(x => x.DownloadStatusNow)
@@ -45,7 +49,19 @@ public partial class HomeViewModel : ReactiveObject
         this.WhenAnyValue(vm => vm.WorkshopUrl)
             .Where(url => !string.IsNullOrWhiteSpace(url))
             .DistinctUntilChanged()
-            .SelectMany(_ => Observable.FromAsync(() => ExtractAppIdAndThumbnailAsync()))
+            .SelectMany(_ => Observable.FromAsync(() => ExtractSingleDownloadModInfo()))
+            .Subscribe(
+                _ =>
+                {
+                    // Intentionally empty
+                },
+                ex => LogAsync?.Invoke($"Error during extraction: {ex.Message}")
+            );
+        
+        this.WhenAnyValue(vm => vm.MultipleWorkshopUrls)
+            .Where(url => !string.IsNullOrWhiteSpace(url))
+            .DistinctUntilChanged()
+            .SelectMany(_ => Observable.FromAsync(() => ExtractMultipleModsInfo()))
             .Subscribe(
                 _ =>
                 {
@@ -81,6 +97,7 @@ public partial class HomeViewModel : ReactiveObject
         _stellarisAutoInstall.LogAsync += UiLogsMessage;
         _downloadTracker.LogAsync += UiLogsMessage;
         _supportedGames.LogAsync += UiLogsMessage;
+        _downloadProcessor.LogAsync += UiLogsMessage;
     }
 
     /// <summary>
@@ -95,7 +112,7 @@ public partial class HomeViewModel : ReactiveObject
             var currentLog = LogsMessage;
 
             // If this is the first log appended, add a newline after the welcome message.
-            if (currentLog == "Welcome to Padma version 1.1") currentLog += Environment.NewLine;
+            if (currentLog == "Welcome to Padma version 1.1.1") currentLog += Environment.NewLine;
 
             // Append the new message with a newline.
             currentLog += message + Environment.NewLine;
@@ -108,39 +125,26 @@ public partial class HomeViewModel : ReactiveObject
     /// <summary>
     ///     Extracts the app ID and loads the thumbnail.
     /// </summary>
-    private async Task ExtractAppIdAndThumbnailAsync()
+    private async Task ExtractSingleDownloadModInfo()
     {
-        try
-        {
-            IsEnabled = false;
-            if (string.IsNullOrWhiteSpace(WorkshopUrl))
-                return;
-
-            // Extract Workshop ID from the URL.
-            await _appIdFinder.ExtractWorkshopId(WorkshopUrl);
-            if (string.IsNullOrEmpty(_appIdFinder.WorkshopId))
-                return;
-
-            // Get App details.
-            await _appIdFinder.AppFinder();
-            // Update UI-bound properties.
-            WorkshopId = _appIdFinder.WorkshopId;
-            AppId = _appIdFinder.AppId;
-            WorkshopTitle = _appIdFinder.ModTitle;
-
-            var thumbnail = await _thumbnailLoader.LoadThumbnail(_appIdFinder.ThumbnailUrl);
-            ModsThumbnail = thumbnail;
-            FileSizeInfo = _appIdFinder.FileSizeInfo;
-            IsVisible = true;
-        }
-        catch (Exception ex)
-        {
-            LogAsync?.Invoke($"Error: {ex.Message}");
-        }
-        finally
-        {
-            IsEnabled = true;
-        }
+         IsEnabled = false;
+         if (string.IsNullOrWhiteSpace(WorkshopUrl))
+             return; 
+         
+         // Extract Workshop ID from the URL.
+         var item = await _downloadProcessor.ExtractWorkshopInfo(WorkshopUrl);
+         _downloadItem = item;
+         
+         // Update UI-bound properties.
+         WorkshopId = _appIdFinder.WorkshopId;
+         AppId = _appIdFinder.AppId;
+         WorkshopTitle = _appIdFinder.ModTitle;
+         var thumbnail = await _thumbnailLoader.LoadThumbnail(_appIdFinder.ThumbnailUrl);
+         ModsThumbnail = thumbnail;
+         
+         FileSizeInfo = _appIdFinder.FileSizeInfo;
+         IsVisible = true;
+         IsEnabled = true;
     }
 
     private async Task LoadModsThumbnailAsync(string url)
@@ -150,46 +154,28 @@ public partial class HomeViewModel : ReactiveObject
     }
 
     /// <summary>
-    ///     Save the download history to LiteDb history.db
-    /// </summary>
-    private async Task SaveHistoryAsync()
-    {
-        if (!string.IsNullOrEmpty(_workshopUrl) && !string.IsNullOrEmpty(_workshopTitle))
-            await _history.SaveHistoryAsync(
-                WorkshopTitle,
-                _workshopUrl,
-                DownloadedPath,
-                _appIdFinder.FileSizeInfo,
-                _appIdFinder.FileSizeBytes);
-    }
-
-    /// <summary>
     ///     Once the user click download this method will execute much of what this app mainly does
     ///     So it just call the CmdRunner method with the corresponding ModID or AppID
     /// </summary>
     [RelayCommand]
     private async Task DownloadButton_OnClickAsync()
     {
-        if (string.IsNullOrEmpty(_appId) || string.IsNullOrEmpty(_workshopId))
+        if (string.IsNullOrEmpty(_appId) || string.IsNullOrEmpty(_workshopId) || DownloadStarted)
             return;
         try
         {
             // Cancel any previous pending delay tasks.
             _cts.Cancel();
             IsEnabled = false;
-            DownloadedPath = Path.Combine(_folderPicker.FolderPathView, AppId, WorkshopId);
-            _downloadTracker.DownloadFolder = _folderPicker.SelectedPath;
-            _appIdFinder.SetValuesOfProgressTracker();
 
             DownloadStatusNow = "Downloading";
             DownloadStarted = true;
             ButtonContent = "Cancel";
 
-            // Add log message to indicate start of process
             await LogAsync("Starting download process...");
 
             // Run the download process.
-            await _runner.RunSteamCmd(_workshopId, _appId);
+            await _downloadProcessor.ProcessDownload(_downloadItem, StellarisAutoInstallEnabled, _history.HistoryEnabled);
         }
         finally
         {
@@ -197,19 +183,58 @@ public partial class HomeViewModel : ReactiveObject
             DownloadStatusNow = _runner.Success ? "Finished" : "Failed";
             IsEnabled = true;
 
-            // If it is a Stellaris mod and auto-install is enabled, trigger auto-install.
-            if (AppId is "281990" && DownloadStatusNow is "Finished" && StellarisAutoInstallEnabled)
-            {
-                await LogAsync($"Workshop item {WorkshopId} is a Stellaris mod");
-                await _stellarisAutoInstall.RunStellarisAutoInstallMods(DownloadedPath, WorkshopTitle);
-                DownloadedPath = $"\"{_stellarisAutoInstall.StellarisDocPath}\"";
-            }
-
-            if (_history.HistoryEnabled && _runner.Success) await SaveHistoryAsync();
-
             await LogAsync("All processes finished.");
             if (DownloadStatusNow is "Finished") ButtonContent = "Open";
         }
+    }
+
+    private async Task ExtractMultipleModsInfo()
+    {
+        if (string.IsNullOrWhiteSpace(MultipleWorkshopUrls)) return;
+        
+        var item = await _downloadProcessor.ExtractWorkshopInfo(MultipleWorkshopUrls);
+        _downloadItem = item;
+
+        IsVisible = true;
+        MultipleFileSizeInfo = _downloadProcessor.GetTotalDownloadSize();
+        
+        var originalWorkshopTitle = _appIdFinder.ModTitle;
+
+        // show the processed titles 
+        ProcessedWorkshopTitles += originalWorkshopTitle + Environment.NewLine;
+
+        MultipleWorkshopUrls = string.Empty;
+    }
+
+    [RelayCommand]
+    public async Task MultiipleDownloadsAsync()
+    {
+        if (DownloadStarted)
+        {
+            await _downloadProcessor.CancelMultipleDownload();
+            return;
+        }
+        
+        if (string.IsNullOrEmpty(_downloadItem.AppId) || string.IsNullOrEmpty(_downloadItem.WorkshopId))
+            return;
+        WorkshopTitle = _appIdFinder.ModTitle;
+        
+        
+        DownloadStatusNow = "Downloading";
+        DownloadStarted = true;
+        MultipleDownButtonContent = "Cancel";
+        ButtonContent = "Cancel";
+
+        await LogAsync("Starting download process...");
+        
+        await _downloadProcessor.ProcessQueuedDownloads(StellarisAutoInstallEnabled, _history.HistoryEnabled);
+        
+        // Update status based on success.
+        DownloadStatusNow = _runner.Success ? "Finished" : "Failed";
+        IsEnabled = true;
+
+        await LogAsync("All processes finished.");
+        if (DownloadStatusNow is "Finished") ButtonContent = "Open";
     }
 
     /// <summary>
@@ -223,7 +248,7 @@ public partial class HomeViewModel : ReactiveObject
         {
             case "Finished":
             {
-                await _folderPicker.OpenFolder(DownloadedPath);
+                await _folderPicker.OpenFolder(_downloadItem.DestinationFolder);
                 break;
             }
             case "Failed":
@@ -291,6 +316,9 @@ public partial class HomeViewModel : ReactiveObject
     private readonly FolderPicker _folderPicker;
     private readonly ThumbnailLoader _thumbnailLoader;
     private readonly SupportedGames _supportedGames;
+    private readonly DownloadProcessor _downloadProcessor;
+    private DownloadItem _downloadItem;
+    private DownloadResult _downloadResult;
 
     // Cancellation token shared for UI tasks.
     private CancellationTokenSource _cts = new();
@@ -306,7 +334,11 @@ public partial class HomeViewModel : ReactiveObject
     private bool _downloadStarted;
     private Bitmap? _modsThumbnail;
     private string? _workshopUrl;
+    private string _multipleWorkshopUrls;
     private string _fileSizeInfo;
+    private string _multipleFileSizeInfo;
+    private string _processedWorkshopTitles;
+    private string _multipleDownButtonContent;
     private bool _isVisible;
     private string _hideLogsHoverMessage = "Hide Logs";
     private bool _consoleLogsVisible = true;
@@ -347,10 +379,34 @@ public partial class HomeViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _logsMessage, value);
     }
 
+    public string MultipleWorkshopUrls
+    {
+        get => _multipleWorkshopUrls;
+        set => this.RaiseAndSetIfChanged(ref _multipleWorkshopUrls, value);
+    }
+
+    public string MultipleFileSizeInfo
+    {
+        get => _multipleFileSizeInfo;
+        set => this.RaiseAndSetIfChanged(ref _multipleFileSizeInfo, value);
+    }
+
+    public string MultipleDownButtonContent
+    {
+        get => _multipleDownButtonContent;
+        set => this.RaiseAndSetIfChanged(ref _multipleDownButtonContent, value);
+    }
+
     public string FileSizeInfo
     {
         get => _fileSizeInfo;
         set => this.RaiseAndSetIfChanged(ref _fileSizeInfo, value);
+    }
+
+    public string ProcessedWorkshopTitles
+    {
+        get => _processedWorkshopTitles;
+        set => this.RaiseAndSetIfChanged(ref _processedWorkshopTitles, value);
     }
 
     public bool IsVisible

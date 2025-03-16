@@ -28,7 +28,7 @@ public class SupportedGamesViewModel : ReactiveObject
 
     private void LoadGames()
     {
-        var allGames = _db.GetAllGames().ToList();
+        var allGames = (_db.GetAllGames() ?? Array.Empty<SupportedGamesData>()).ToList();
         Games = new ObservableCollection<SupportedGamesData>(allGames);
         FilteredGames = new ObservableCollection<SupportedGamesData>(allGames);
     }
