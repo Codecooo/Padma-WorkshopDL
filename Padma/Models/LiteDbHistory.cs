@@ -17,7 +17,6 @@ public class LiteDbHistory
     public string WorkshopTitle { get; set; }
     public string? WorkshopUrl { get; set; }
     public string DownloadLocation { get; set; }
-    public string DownloadStatus { get; set; }
     public string DownloadSize { get; set; }
     public long DownloadSizeBytes { get; set; }
 }
@@ -57,22 +56,20 @@ public class SaveHistory
         {
             lock (DbLock)
             {
-                using (var db = new LiteDatabase($"Filename={_dbPath};Connection=shared"))
+                using var db = new LiteDatabase($"Filename={_dbPath};Connection=shared");
+                var history = db.GetCollection<LiteDbHistory>("history");
+                var historyEntry = new LiteDbHistory
                 {
-                    var history = db.GetCollection<LiteDbHistory>("history");
-                    var historyEntry = new LiteDbHistory
-                    {
-                        Date = DateTime.Now.ToString("g", new CultureInfo("en-GB")),
-                        WorkshopTitle = workshopTitle,
-                        WorkshopUrl = workshopUrl,
-                        DownloadLocation = downloadLocation,
-                        DownloadSize = downloadSize,
-                        DownloadSizeBytes = downloadSizeBytes
-                    };
+                    Date = DateTime.Now.ToString("g", new CultureInfo("en-GB")),
+                    WorkshopTitle = workshopTitle,
+                    WorkshopUrl = workshopUrl,
+                    DownloadLocation = downloadLocation,
+                    DownloadSize = downloadSize,
+                    DownloadSizeBytes = downloadSizeBytes
+                };
 
-                    history.Insert(historyEntry);
-                    HistoryChangedSignal.OnNext(Unit.Default);
-                }
+                history.Insert(historyEntry);
+                HistoryChangedSignal.OnNext(Unit.Default);
             }
         }
         catch (Exception e)
@@ -85,11 +82,9 @@ public class SaveHistory
     {
         lock (DbLock)
         {
-            using (var db = new LiteDatabase($"Filename={_dbPath};Connection=shared"))
-            {
-                var history = db.GetCollection<LiteDbHistory>("history");
-                return history.FindAll().ToList();
-            }   
+            using var db = new LiteDatabase($"Filename={_dbPath};Connection=shared");
+            var history = db.GetCollection<LiteDbHistory>("history");
+            return history.FindAll().ToList();
         }
     }
 
@@ -97,12 +92,10 @@ public class SaveHistory
     {
         lock (DbLock)
         {
-            using (var db = new LiteDatabase($"Filename={_dbPath};Connection=shared"))
-            {
-                var history = db.GetCollection<LiteDbHistory>("history");
-                history.DeleteAll();
-                HistoryChangedSignal.OnNext(Unit.Default);
-            }   
+            using var db = new LiteDatabase($"Filename={_dbPath};Connection=shared");
+            var history = db.GetCollection<LiteDbHistory>("history");
+            history.DeleteAll();
+            HistoryChangedSignal.OnNext(Unit.Default);
         }
     }
 }

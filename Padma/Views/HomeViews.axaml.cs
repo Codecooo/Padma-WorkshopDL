@@ -14,7 +14,7 @@ public partial class HomeViews : UserControl
     {
         InitializeComponent();
 
-        // Get the ViewModel but don't set DataContext yet
+        // Get the ViewModel 
         _homeViewModel = App.ServiceProvider.GetRequiredService<HomeViewModel>();
 
         AutoScrollLogs();

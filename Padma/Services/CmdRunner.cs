@@ -23,7 +23,7 @@ public class CmdRunner
     public event Func<string, Task>? LogAsync;
 
     /// <summary>
-    ///     Run steamcmd on bash, first check if the actual steamcmd is in the Padma directory if its not
+    ///     Run steamcmd on terminal, first check if the actual steamcmd is in the Padma directory if its not
     ///     it will proceed to download steamcmd, then download the mod based on the WorkshopID and AppID
     ///     If steamcmd found in the Padma directory it will send straight to download the mods
     /// </summary>
@@ -74,7 +74,7 @@ public class CmdRunner
     ///     reliable way to do it in Windows except this. For Linux/Mac it will use bash with commands. Mainly because we need
     ///     to mark the shell script as executable.
     /// </summary>
-    public async Task SteamCmdDownloader()
+    private async Task SteamCmdDownloader()
     {
         var downloadCommandOrUrl = GetSteamCmdUrlOrCommand();
         string archiveDownloadPath;
@@ -116,7 +116,7 @@ public class CmdRunner
     }
     
     /// <summary>
-    ///     Download the mods with bash for steamcmd, it provides delay if the process encounter any timeout error
+    ///     Download the mods with terminal for steamcmd, it provides delay if the process encounter any timeout error
     ///     usual for large size downloads. The default is 6 max attempts, this should suffice unless the user has really
     ///     bad internet speed or the size is abnormally large.
     /// </summary>
@@ -326,6 +326,9 @@ public class CmdRunner
             workshopId);
     }
 
+    /// <summary>
+    ///     Kill steamcmd by searching the process name of "steamcmd" in the process list
+    /// </summary>
     public async Task KillSteamCmd()
     {
         try

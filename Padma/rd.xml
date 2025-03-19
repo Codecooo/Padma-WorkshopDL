@@ -1,0 +1,12 @@
+<Directives xmlns="http://schemas.microsoft.com/netfx/2013/01/metadata">
+    <Application>
+        <!-- Preserve Litedb for trimming -->
+        <Assembly Name="LiteDB" Dynamic="Required All" />
+        <Assembly Name="Padma">
+            <Type Name="Padma.Models.SupportedGamesData" Dynamic="Required All" />
+        </Assembly>
+        <Assembly Name="Padma">
+            <Type Name="Padma.Models.LiteDbHistory" Dynamic="Required All" />
+        </Assembly>
+    </Application>
+</Directives>

@@ -3,13 +3,19 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Padma.ViewModels;assembly=Padma"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="525"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="525"
              x:DataType="vm:HomeViewModel"
              x:Class="Padma.Views.HomeViews"
              x:CompileBindings="True">
+
     <Grid Background="{DynamicResource MainDarkBrush}" ColumnDefinitions="*, Auto">
+        
+        <!-- Main Section -->
         <Grid Grid.Column="0" RowDefinitions="Auto, *">
-            <!-- Hide Console Logs Window Button -->
+            
+            <!-- Hide Logs Button -->
             <ToggleButton Grid.Row="0"
                           ToolTip.Tip="{Binding HideLogsHoverMessage}"
                           ToolTip.Placement="Bottom"
@@ -26,93 +32,124 @@
                                IsVisible="False" />
                 </StackPanel>
             </ToggleButton>
-            <!-- Main Area -->
-            <DockPanel LastChildFill="False" Grid.Row="1">
-                    <TabControl DockPanel.Dock="Top" HorizontalAlignment="Center" Background="{DynamicResource MainDarkBrush}" TabStripPlacement="Top">
-                            <TabItem Header="Single Download" FontSize="12" >
-                                <Grid Margin="0,7,0,0" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
-                        <Image Grid.Row="1" Name="Thumbnail"
-                               Source="{Binding ModsThumbnail}" 
-                               Height="125" MaxWidth="240" />
-                        <Label Grid.Row="2" Foreground="White"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Margin="0,5,0,0"
-                               Content="{Binding WorkshopTitle}"
-                               FontSize="17" />
-                        <Label Grid.Row="3" Foreground="White" Content="Mod ID" HorizontalAlignment="Center"
-                               Margin="0,5,140,5" />
-                        <Label Grid.Row="3" Foreground="White" Content="App ID" HorizontalAlignment="Center"
-                               Margin="140,5,0,5" />
-                        <TextBox Name="ModId" Text="{Binding WorkshopId}" FontSize="11"
-                                 TextAlignment="Center"
-                                 Padding="8" Grid.Row="4" Width="85" Height="30" Margin="0,0,140,5" />
-                        <TextBox Name="Appid" Text="{Binding AppId}" FontSize="11"
-                                 TextAlignment="Center"
-                                 Padding="8" Grid.Row="4" Width="85" Height="30" Margin="140,0,0,5" />
-                        <TextBox Watermark="Enter Steam Workshop Url" 
-                                 MaxWidth="211"
-                                 Text="{Binding WorkshopUrl}"
-                                 Grid.Row="5" Height="20" Margin="10" />
-                        <TextBlock HorizontalAlignment="Center" Margin="0,0,0,6" Text="{Binding FileSizeInfo}"
-                                   Foreground="White" Grid.Row="6" IsVisible="{Binding IsVisible}" />
-                        <Button Command="{Binding DownloadButton_OnClickCommand}" IsEnabled="{Binding IsEnabled}"
-                                Classes="Small" Grid.Row="7"
-                                Height="40" HorizontalAlignment="Center" Width="120" Background="#1434A4">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
-                                        HorizontalAlignment="Center">
-                                <Image Source="/Assets/cloud_download.png" Margin="0,0,5,0" />
-                                <TextBlock Text="Download" VerticalAlignment="Center" Foreground="White" />
-                            </StackPanel>
-                        </Button>
-                        </Grid>
-                            </TabItem>
-                        <!-- Multiple Downloads Tab -->
-                            <TabItem Header="Multiple Download" FontSize="12">
-                                <StackPanel Margin="7" >
-                                    <TextBox Watermark="Workshop title lists" Width="211" 
-                                             Text="{Binding ProcessedWorkshopTitles}" 
-                                             IsReadOnly="True" Height="70" MaxHeight="240" />
-                                    <TextBox Margin="0,40,0,0" Watermark="Enter Workshop URL here" Width="211" 
-                                             Text="{Binding MultipleWorkshopUrls}" />
-                                    <TextBlock HorizontalAlignment="Center" Margin="0,6,0,4" Text="{Binding MultipleFileSizeInfo}"
-                                               Foreground="White" IsVisible="{Binding IsVisible}" />
-                                    <Button Margin="0,7,0,4" Command="{Binding MultiipleDownloadsCommand}" IsEnabled="{Binding IsEnabled}"
-                                            Classes="Small"
-                                            Height="40" HorizontalAlignment="Center" Width="120" Background="#1434A4">
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
-                                                    HorizontalAlignment="Center">
-                                            <Image Source="/Assets/cloud_download.png" Margin="0,0,5,0" />
-                                            <TextBlock Text="Download" VerticalAlignment="Center" Foreground="White" />
-                                        </StackPanel>
-                                    </Button>
+
+            <!-- Content Area -->
+            <DockPanel Grid.Row="1" LastChildFill="False">
+                
+                <!-- Tab Section -->
+                <TabControl DockPanel.Dock="Top"
+                            TabStripPlacement="Top"
+                            Background="{DynamicResource MainDarkBrush}"
+                            HorizontalAlignment="Center">
+                    
+                    <!-- Single Download Tab -->
+                    <TabItem Header="Single Download" FontSize="12">
+                        <Grid Margin="0,7,0,0"
+                              RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
+                            
+                            <Image Grid.Row="1" Name="Thumbnail"
+                                   Source="{Binding ModsThumbnail}"
+                                   Height="125" MaxWidth="240" />
+                            
+                            <Label Grid.Row="2" Content="{Binding WorkshopTitle}" Foreground="White"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Margin="0,5,0,0" FontSize="17" />
+                            
+                            <Label Grid.Row="3" Content="Mod ID" Foreground="White"
+                                   HorizontalAlignment="Center" Margin="0,5,140,5" />
+                            
+                            <Label Grid.Row="3" Content="App ID" Foreground="White"
+                                   HorizontalAlignment="Center" Margin="140,5,0,5" />
+                            
+                            <TextBox Grid.Row="4" Name="ModId" Text="{Binding WorkshopId}" FontSize="11"
+                                     TextAlignment="Center" Padding="8" Width="85" Height="30"
+                                     Margin="0,0,140,5" />
+                            
+                            <TextBox Grid.Row="4" Name="Appid" Text="{Binding AppId}" FontSize="11"
+                                     TextAlignment="Center" Padding="8" Width="85" Height="30"
+                                     Margin="140,0,0,5" />
+                            
+                            <TextBox Grid.Row="5" Watermark="Enter Steam Workshop Url" MaxWidth="211"
+                                     Text="{Binding WorkshopUrl}" Height="20" Margin="10" />
+                            
+                            <TextBlock Grid.Row="6" Text="{Binding FileSizeInfo}" Foreground="White"
+                                       HorizontalAlignment="Center" Margin="0,0,0,6"
+                                       IsVisible="{Binding IsVisible}" />
+                            
+                            <Button Grid.Row="7" Height="40" Width="120" HorizontalAlignment="Center"
+                                    Command="{Binding DownloadSingleModCommand}"
+                                    IsEnabled="{Binding SingleDownloadButtonEnabled}"
+                                    Background="#1434A4" Classes="MainButtonStyles">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <Image Source="/Assets/cloud_download.png" Height="20" Margin="0,0,5,0" />
+                                    <TextBlock Text="Download" VerticalAlignment="Center" Foreground="White" />
                                 </StackPanel>
-                            </TabItem>
-                        </TabControl>
+                            </Button>
+                        </Grid>
+                    </TabItem>
+
+                    <!-- Multiple Download Tab -->
+                    <TabItem Header="Multiple Download" FontSize="12">
+                        <StackPanel Margin="7">
+                            
+                            <TextBox Text="{Binding ProcessedWorkshopTitles}" Watermark="Workshop title lists"
+                                     Width="211" Height="70" MaxHeight="240" IsReadOnly="True" />
+                            
+                            <Button Content="Clear List" Margin="0,7,0,4" Classes="MainButtonStyles"
+                                    HorizontalAlignment="Center"
+                                    Command="{Binding ClearDownloadQueueCommand}" />
+                            
+                            <TextBox Text="{Binding MultipleWorkshopUrls}" Watermark="Enter Workshop URL here"
+                                     Width="211" Margin="0,40,0,0" />
+                            
+                            <TextBlock Text="{Binding MultipleFileSizeInfo}" Foreground="White"
+                                       Margin="0,6,0,4" HorizontalAlignment="Center"
+                                       IsVisible="{Binding IsVisible}" />
+                            
+                            <Button Command="{Binding MultipleDownloadsCommand}"
+                                    Margin="0,7,0,4" Height="40" Width="120"
+                                    HorizontalAlignment="Center"
+                                    Background="#1434A4" Classes="MainButtonStyles" IsEnabled="True">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <Image Source="{Binding MultipleDownloadButtonIcon}" Height="20" Margin="0,0,5,0" />
+                                    <TextBlock Text="{Binding MultipleDownButtonContent}" Foreground="White" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </TabItem>
+
+                </TabControl>
+
                 <!-- Download Bar -->
-                <Border IsVisible="{Binding DownloadStarted}" DockPanel.Dock="Bottom"
-                        Background="{DynamicResource MidnightBlueBrush}" CornerRadius="5">
+                <Border DockPanel.Dock="Bottom"
+                        Background="{DynamicResource MidnightBlueBrush}"
+                        CornerRadius="5"
+                        IsVisible="{Binding DownloadStarted}">
                     <StackPanel Spacing="2">
-                        <TextBlock FontSize="11" Margin="5,5,0,0" Foreground="White" Text="{Binding WorkshopTitle}" />
-                        <ProgressBar Foreground="#478778" Value="{Binding DownloadProgress}"
-                                     ShowProgressText="True" Minimum="0" Maximum="100" />
-                        <Button Command="{Binding CancelAndOpenCommand}"
-                                Content="{Binding ButtonContent}" IsEnabled="{Binding CancelEnabled}"
-                                FontSize="10" Foreground="IndianRed" Classes="ConfirmButton" Margin="0,0,5,0"
-                                HorizontalAlignment="Right" />
-                        <TextBlock FontSize="11" Margin="5,0,0,5" VerticalAlignment="Bottom" Foreground="White"
-                                   Text="{Binding DownloadStatusNow}" />
+                        <TextBlock Text="{Binding WorkshopTitle}" FontSize="11" Margin="5,5,0,0" Foreground="White" />
+                        <ProgressBar Value="{Binding DownloadProgress}" Minimum="0" Maximum="100"
+                                     ShowProgressText="True" Foreground="#478778" />
+                        <Button Content="{Binding ButtonContent}" Command="{Binding CancelAndOpenCommand}"
+                                IsEnabled="{Binding CancelEnabled}" FontSize="10"
+                                Foreground="IndianRed" Margin="0,0,5,0"
+                                HorizontalAlignment="Right" Classes="ConfirmButton" />
+                        <TextBlock Text="{Binding DownloadStatusNow}" FontSize="11" Margin="5,0,0,5"
+                                   VerticalAlignment="Bottom" Foreground="White" />
                     </StackPanel>
                 </Border>
+
             </DockPanel>
         </Grid>
+
         <!-- Console Log Window -->
-        <Grid IsVisible="{Binding ConsoleLogsVisible}" Grid.Column="1" Background="#161C1E" Width="310">
+        <Grid Grid.Column="1" Width="310" Background="#161C1E"
+              IsVisible="{Binding ConsoleLogsVisible}">
             <ScrollViewer VerticalScrollBarVisibility="Hidden" Margin="10">
-                <TextBox Name="LogOutput" Text="{Binding LogsMessage}" Classes="ConsoleLog" FontSize="11"
-                         Background="#1B1212"
-                         AcceptsReturn="True" IsReadOnly="True" Foreground="White" />
+                <TextBox Name="LogOutput" Text="{Binding LogsMessage}" FontSize="11"
+                         Classes="ConsoleLog" AcceptsReturn="True" IsReadOnly="True"
+                         Background="#1B1212" Foreground="White" />
             </ScrollViewer>
         </Grid>
+
     </Grid>
 </UserControl>

@@ -36,12 +36,11 @@ public class DownloadMods
                 Item = item
             };
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return new DownloadResult
             {
                 Success = false,
-                Error = ex.Message,
                 Item = item
             };
         }
@@ -68,6 +67,5 @@ public class DownloadResult
 {
     public bool Success { get; set; }
     public string DownloadPath { get; set; }
-    public string Error { get; set; }
     public DownloadItem Item { get; set; }
 }

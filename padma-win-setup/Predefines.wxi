@@ -60,25 +60,25 @@
     <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
     <?define ProductComponentGUID = "eb188da9-3d86-48e9-9147-eb67812f3d46"?>
     <!-- UpgradeCode must be unique and not changed once the first version of the program is installed. -->
-    <?define UpgradeCode = "kFyGLD7qtEePdU6W+6TqfA==," ?>
+    <?define UpgradeCode = "28b78a23-776a-4fe8-b0c9-6d55035d38bd" ?>
     <?else?>
     <!-- Application name gets "-32bit" added for 32-bit builds. -->
     <?define PlatformInName = "-32bit"?>
     <?define Win64 = "no" ?>
     <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
-    <?define ProductComponentGUID = "kFyGLD7qtEePdU6W+6TqfA==,"?>
+    <?define ProductComponentGUID = "2de86ca4-189b-4e61-8594-ab37b22eca67"?>
     <!-- UpgradeCode must be unique and not changed once the first version of the program is installed. -->
-    <?define UpgradeCode = "7cdd4439-ba95-483f-aa2d-8cbcb7263cff," ?>
+    <?define UpgradeCode = "7cdd4439-ba95-483f-aa2d-8cbcb7263cff" ?>
     <?endif?>
-    <?define AppDataGUID = "c413eaba-9542-43c7-94b8-89b1f0dd7317," ?>
-    <?define DllFilesGUID = "1cbb8549-ca47-4a08-b3cb-5abbba5fca09," ?>
+    <?define AppDataGUID = "c413eaba-9542-43c7-94b8-89b1f0dd7317" ?>
+    <?define DllFilesGUID = "1cbb8549-ca47-4a08-b3cb-5abbba5fca09" ?>
 
     <!--
         Complete name of the application that appears everywhere.
         Guarantees the name is unique across all the setup project examples.
     -->
     <?define Name = "Padma Workshop Downloader"?>
-    
+
     <!-- Name of the folder that appear in the Start Menu -->
     <?define StartupMenuName = "$(var.AppName)"?>
 

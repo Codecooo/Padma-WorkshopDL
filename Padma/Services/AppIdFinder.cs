@@ -95,11 +95,16 @@ public class AppIdFinder
             }
             catch (Exception ex)
             {
-                await LogAsync($"Error finding AppID or Filesize: {ex.Message}");
+                await LogAsync($"Error fetching for workshop info: {ex.Message}");
             }
         }
     }
 
+    /// <summary>
+    ///     Calculate the size of the workshop mods
+    /// </summary>
+    /// <param name="fileSizeBytes"></param>
+    /// <returns></returns>
     public string CalculateFileSize(long fileSizeBytes)
     {
         double filesize;
@@ -109,20 +114,24 @@ public class AppIdFinder
         {
             // Calculate the filesize in bytes to readable format GB, MB or KB
             case >= 1000:
+            {
                 filesize /= 1024;
                 return $"{filesize:F1} GB"; // Calculate to GB if the integral value is larger than 1000 MB
+            }
             case < 1:
             {
                 var fileSizeKb = FileSizeBytes / 1024.0;
                 return $"{fileSizeKb:F1} KB"; // Calculate to KB if the value is less than 1 MB 
             }
             default:
+            {
                 return $"{filesize:F1} MB"; // If all conditions fail revert back to MB
+            }
         }
     }
 
     /// <summary>
-    ///     Set the value of the DownloadProgressTracker class to the appropriate information once succesfully
+    ///     Set the value of the DownloadProgressTracker class to the appropriate information once successfully
     ///     retrieved all necessary info through SteamWebAPI
     /// </summary>
     public void SetValuesOfProgressTracker()

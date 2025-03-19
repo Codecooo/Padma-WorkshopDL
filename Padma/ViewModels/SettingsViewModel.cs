@@ -83,7 +83,7 @@ public partial class SettingsViewModel : ReactiveObject
     }
 
     [RelayCommand]
-    public void RememberHistoryToggle()
+    private void RememberHistoryToggle()
     {
         _saveHistory.HistoryEnabled = !_saveHistory.HistoryEnabled;
         _settings["history_enabled"] = _saveHistory.HistoryEnabled;
@@ -91,7 +91,7 @@ public partial class SettingsViewModel : ReactiveObject
     }
 
     [RelayCommand]
-    public void DisableStellarisAutoInstallMods()
+    private void DisableStellarisAutoInstallMods()
     {
         _homeViewModel.StellarisAutoInstallEnabled = !_homeViewModel.StellarisAutoInstallEnabled;
         _settings["auto_install_stellaris_mods"] = _homeViewModel.StellarisAutoInstallEnabled;
@@ -99,13 +99,13 @@ public partial class SettingsViewModel : ReactiveObject
     }
 
     [RelayCommand]
-    public void ClearHistory()
+    private void ClearHistory()
     {
         _saveHistory.DeleteHistory();
     }
 
     [RelayCommand]
-    public void ResetPadma()
+    private void ResetPadma()
     {
         _saveHistory.DeleteHistory();
         var steamappsPath = Path.Combine(_folderPicker.SelectedPath, "steamapps");
@@ -130,7 +130,7 @@ public partial class SettingsViewModel : ReactiveObject
     }
 
     [RelayCommand]
-    public async Task SelectFolderPath()
+    private async Task SelectFolderPath()
     {
         await _folderPicker.PickFolder();
         _settings["download_path"] = _folderPicker.SelectedPath;
