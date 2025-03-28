@@ -13,13 +13,14 @@ Padma Workshop Downloader is a GUI wrapper for steamcmd to download workshop mod
 | Change download directory   | <p align="center"> :white_check_mark: </p> |
 | Download history   | <p align="center"> :white_check_mark: </p>|
 | Auto fetch AppID   | <p align="center"> :white_check_mark: </p> |
+| Multiple mods download   | <p align="center"> :white_check_mark: </p> |
 
 With Padma now for Stellaris mods you don't have to manually install them with Paradox Launcher, the app will do that for you. It will automatically install Stellaris mods once they detect it. Of course you could disable this in settings.
 
 ## How to Use
 <strong>Linux</strong>
 1. Install the AppImage file from latest [Releases](https://github.com/Codecooo/Padma/releases/) in this github page
-2. Mark the AppImage file as executable by running this command in terminal `chmod +x Padma-v1.1.0.AppImage`or set it as executable through file manager GUI. Run the AppImage file
+2. Mark the AppImage file as executable by running this command in terminal `chmod +x Padma-v1.2.0.AppImage`or set it as executable through file manager GUI. Run the AppImage file
 3. If you want to check for supported games, head over to the Supported Games tab (console icon) and search for your games
 4. In the home page, enter the steam workshop URL, wait for the process to fetch appID finish and then click download.
 5. For first use it will be quite slow because it will update steamcmd but once it finishes the process should be faster.
@@ -57,7 +58,6 @@ You could open an issue in this github page and the describe what the issue, wha
 
 
 ## Future Plans
-1. Cross Platform (Mac and Windows)
-2. Multiple downloads
+1. Cross Platform (Mac)
 3. Collections
 4. Support for other providers (quite hard)
