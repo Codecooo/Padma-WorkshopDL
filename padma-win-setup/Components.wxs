@@ -91,5 +91,19 @@
 			<File Source="$(var.Padma.ProjectDir)bin\release\net8.0\win-x64\Padma.pdb" Checksum="yes" />
 		</Component>
 	</ComponentGroup>
+	<ComponentGroup Id="AssetsComponents" Directory="INSTALLFOLDER">
+		<Component Guid="$(var.AssetsGUID)" Subdirectory="Assets">
+			<File Source="$(var.Padma.ProjectDir)Assets\cloud_download.png" Checksum="yes" />
+			<File Source="$(var.Padma.ProjectDir)Assets\console-64.png" Checksum="yes" />
+			<File Source="$(var.Padma.ProjectDir)Assets\console-64-crossed.png" Checksum="yes" />
+			<File Source="$(var.Padma.ProjectDir)Assets\cross.png" Checksum="yes" />
+			<File Source="$(var.Padma.ProjectDir)Assets\folder.png" Checksum="yes" />
+			<File Source="$(var.Padma.ProjectDir)Assets\games.png" Checksum="yes" />
+			<File Source="$(var.Padma.ProjectDir)Assets\home.png" Checksum="yes" />
+			<File Source="$(var.Padma.ProjectDir)Assets\history.png" Checksum="yes" />
+			<File Source="$(var.Padma.ProjectDir)Assets\logo.png" Checksum="yes" />
+			<File Source="$(var.Padma.ProjectDir)Assets\settings.png" Checksum="yes" />
+		</Component>
+	</ComponentGroup>
     </Fragment>
 </Wix>

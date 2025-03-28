@@ -72,6 +72,7 @@
     <?endif?>
     <?define AppDataGUID = "c413eaba-9542-43c7-94b8-89b1f0dd7317" ?>
     <?define DllFilesGUID = "1cbb8549-ca47-4a08-b3cb-5abbba5fca09" ?>
+    <?define AssetsGUID = "dc463b0056b849faadd0c79555f598ff" ?>
 
     <!--
         Complete name of the application that appears everywhere.

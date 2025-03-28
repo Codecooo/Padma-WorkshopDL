@@ -63,20 +63,20 @@
             load in WiX/Windows Installer (one online comment suggests it can).
             I used WordPad to successfully create the .rtf file.
         -->
-        <WixVariable Id="WixUILicenseRtf" Value="$(var.padma-win-setup.ProjectDir)res\LICENSE.rtf" />
+        <WixVariable Id="WixUILicenseRtf" Value="$(MSBuildThisFileDirectory)res\LICENSE.rtf" />
         
         <!-- Also referred to as the banner image that fills the background -->
-        <WixVariable Id="WixUIDialogBmp" Value="$(var.padma-win-setup.ProjectDir)res\setup_dialogimage.bmp" />
+        <WixVariable Id="WixUIDialogBmp" Value="$(MSBuildThisFileDirectory)res\setup_dialogimage.bmp" />
 
         <!-- Also referred to as the header image that goes across the top -->
-        <WixVariable Id="WixUIBannerBmp" Value="$(var.padma-win-setup.ProjectDir)res\setup_bannerimage.bmp" />
+        <WixVariable Id="WixUIBannerBmp" Value="$(MSBuildThisFileDirectory)res\setup_bannerimage.bmp" />
 
         <!--
             Add Icon and ARPPRODUCTICON (the installer icon).
             Note: ARPPRODUCTICON = Add/Remove Program Product Icon
             This icon is visible in the Windows Apps and Features list.
         -->
-        <Icon Id="icon.ico" SourceFile="$(var.padma-win-setup.ProjectDir)res\favicon.ico" />
+        <Icon Id="icon.ico" SourceFile="$(MSBuildThisFileDirectory)res\favicon.ico" />
         <Property Id="ARPPRODUCTICON" Value="icon.ico" />
 
         <!-- ######## Describe the Features that can be installed ######## -->
@@ -88,6 +88,7 @@
             <ComponentGroupRef Id="Components" />
             <ComponentGroupRef Id="PadmaData" />
             <ComponentGroupRef Id="DllComponents" />
+            <ComponentGroupRef Id="AssetsComponents" />
         </Feature>
     </Package>
 </Wix>
