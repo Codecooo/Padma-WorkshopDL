@@ -5,11 +5,11 @@
              xmlns:vm="clr-namespace:Padma.ViewModels;assembly=Padma"
              mc:Ignorable="d"
              d:DesignWidth="800"
-             d:DesignHeight="525"
+             d:DesignHeight="565"
              x:DataType="vm:HomeViewModel"
              x:Class="Padma.Views.HomeViews"
              x:CompileBindings="True">
-
+    
     <Grid Background="{DynamicResource MainDarkBrush}" ColumnDefinitions="*, Auto">
         
         <!-- Main Section -->
@@ -36,10 +36,12 @@
             <!-- Content Area -->
             <DockPanel Grid.Row="1" LastChildFill="False">
                 
+                <Grid ColumnDefinitions="*, Auto, *">
+                    
+                </Grid>
                 <!-- Tab Section -->
                 <TabControl DockPanel.Dock="Top"
                             TabStripPlacement="Top"
-                            Background="{DynamicResource MainDarkBrush}"
                             HorizontalAlignment="Center">
                     
                     <!-- Single Download Tab -->
@@ -51,7 +53,7 @@
                                    Source="{Binding ModsThumbnail}"
                                    Height="125" MaxWidth="240" />
                             
-                            <Label Grid.Row="2" Content="{Binding WorkshopTitle}" Foreground="White"
+                            <TextBlock TextAlignment="Center" TextWrapping="WrapWithOverflow" MaxWidth="200" Grid.Row="2" Text="{Binding WorkshopTitle}" Foreground="White"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Margin="0,5,0,0" FontSize="17" />
                             
@@ -61,12 +63,12 @@
                             <Label Grid.Row="3" Content="App ID" Foreground="White"
                                    HorizontalAlignment="Center" Margin="140,5,0,5" />
                             
-                            <TextBox Grid.Row="4" Name="ModId" Text="{Binding WorkshopId}" FontSize="11"
-                                     TextAlignment="Center" Padding="8" Width="85" Height="30"
+                            <TextBox Grid.Row="4" IsReadOnly="True" Text="{Binding WorkshopId}" FontSize="11"
+                                     TextAlignment="Center" Padding="8" Width="95" Height="30"
                                      Margin="0,0,140,5" />
                             
-                            <TextBox Grid.Row="4" Name="Appid" Text="{Binding AppId}" FontSize="11"
-                                     TextAlignment="Center" Padding="8" Width="85" Height="30"
+                            <TextBox Grid.Row="4" IsReadOnly="True" Text="{Binding AppId}" FontSize="11"
+                                     TextAlignment="Center" Padding="8" Width="95" Height="30"
                                      Margin="140,0,0,5" />
                             
                             <TextBox Grid.Row="5" Watermark="Enter Steam Workshop Url" MaxWidth="211"
@@ -93,14 +95,14 @@
                         <StackPanel Margin="7">
                             
                             <TextBox Text="{Binding ProcessedWorkshopTitles}" Watermark="Workshop title lists"
-                                     Width="211" Height="70" MaxHeight="240" IsReadOnly="True" />
+                                     Width="221" Height="135" IsReadOnly="True" />
                             
                             <Button Content="Clear List" Margin="0,7,0,4" Classes="MainButtonStyles"
                                     HorizontalAlignment="Center"
                                     Command="{Binding ClearDownloadQueueCommand}" />
                             
                             <TextBox Text="{Binding MultipleWorkshopUrls}" Watermark="Enter Workshop URL here"
-                                     Width="211" Margin="0,40,0,0" />
+                                     Width="221" Margin="0,40,0,0" />
                             
                             <TextBlock Text="{Binding MultipleFileSizeInfo}" Foreground="White"
                                        Margin="0,6,0,4" HorizontalAlignment="Center"

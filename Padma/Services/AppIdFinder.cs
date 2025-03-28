@@ -9,19 +9,13 @@ namespace Padma.Services;
 
 public class AppIdFinder
 {
-    private readonly DownloadProgressTracker _downloadProgressTracker;
-
-    public AppIdFinder(DownloadProgressTracker downloadProgressTracker)
-    {
-        _downloadProgressTracker = downloadProgressTracker;
-    }
-
-    public string AppId;
+    public string AppId = string.Empty;
     public string WorkshopId = string.Empty;
-    public string ModTitle;
-    public string ThumbnailUrl;
+    public string ModTitle = string.Empty;
+    public string ThumbnailUrl = string.Empty;
     public long FileSizeBytes;
-    public string FileSizeInfo;
+    public string FileSizeInfo = string.Empty;
+
     public event Func<string, Task>? LogAsync;
 
     public async Task ExtractWorkshopId(string workshopUrl)
@@ -30,7 +24,7 @@ public class AppIdFinder
         var regex = new Regex(@"id=(\d+)");
         var match = regex.Match(workshopUrl);
 
-        if (match.Success) WorkshopId = match.Groups[1].Value; // Assign first
+        if (match.Success) WorkshopId = match.Groups[1].Value;  
         if (string.IsNullOrEmpty(WorkshopId))
         {
             await LogAsync("Invalid Workshop ID.");
@@ -128,16 +122,5 @@ public class AppIdFinder
                 return $"{filesize:F1} MB"; // If all conditions fail revert back to MB
             }
         }
-    }
-
-    /// <summary>
-    ///     Set the value of the DownloadProgressTracker class to the appropriate information once successfully
-    ///     retrieved all necessary info through SteamWebAPI
-    /// </summary>
-    public void SetValuesOfProgressTracker()
-    {
-        _downloadProgressTracker.AppId = AppId;
-        _downloadProgressTracker.WorkshopId = WorkshopId;
-        _downloadProgressTracker.TotalSize = FileSizeBytes;
     }
 }

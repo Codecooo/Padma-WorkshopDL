@@ -20,11 +20,11 @@ public partial class MainWindow : Window
         var folderpicker = new FolderPicker();
         var saveHistory = new SaveHistory();
         var supportedGames = new SupportedGames();
-        var appIdFinder = new AppIdFinder(downloadProgressTracker);
+        var appIdFinder = new AppIdFinder();
         var cmdRunner = new CmdRunner();
         var thumbnailLoader = new ThumbnailLoader();
         var stellarisAutoInstall = new StellarisAutoInstall();
-        var downloadMods = new DownloadMods(cmdRunner, appIdFinder, downloadProgressTracker);
+        var downloadMods = new DownloadMods(cmdRunner, downloadProgressTracker);
         var downloadProcessor = new DownloadProcessor(downloadMods, appIdFinder, stellarisAutoInstall, saveHistory, folderpicker);
 
         // Create ViewModels with dependencies

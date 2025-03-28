@@ -1,54 +1,34 @@
-using System;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace Padma.Services;
 
-public class DownloadMods
+public class DownloadMods(CmdRunner cmdRunner, DownloadProgressTracker progressTracker)
 {
-    private readonly CmdRunner _cmdRunner;
-    private readonly AppIdFinder _appIdFinder;
-    private readonly DownloadProgressTracker _progressTracker;
-    
-    public DownloadMods(CmdRunner cmdRunner, AppIdFinder appIdFinder, DownloadProgressTracker progressTracker)
-    {
-        _cmdRunner = cmdRunner;
-        _appIdFinder = appIdFinder;
-        _progressTracker = progressTracker;
-    }
-    
     public async Task<DownloadResult> DownloadMod(DownloadItem item)
     {
-        try
+        // Set up the download tracking
+        progressTracker.DownloadFolder = item.DestinationFolder;
+        progressTracker.AppId = item.AppId;
+        progressTracker.WorkshopId = item.WorkshopId;
+        progressTracker.TotalSize = item.SizeBytes;
+
+        // Perform the download
+        await cmdRunner.RunSteamCmd(item.WorkshopId, item.AppId, item.DestinationFolder);
+
+        // Return the result
+        return new DownloadResult
         {
-            // Set up the download tracking
-            _progressTracker.DownloadFolder = item.DestinationFolder;
-            _appIdFinder.SetValuesOfProgressTracker();
-            
-            // Perform the download
-            await _cmdRunner.RunSteamCmd(item.WorkshopId, item.AppId, item.DestinationFolder);
-            
-            // Return the result
-            return new DownloadResult
-            {
-                Success = _cmdRunner.Success,
-                DownloadPath = Path.Combine(item.DestinationFolder, "steamapps", "workshop", "content", item.AppId, item.WorkshopId),
-                Item = item
-            };
-        }
-        catch (Exception)
-        {
-            return new DownloadResult
-            {
-                Success = false,
-                Item = item
-            };
-        }
+            Success = cmdRunner.Success,
+            DownloadPath = Path.Combine(item.DestinationFolder, "steamapps", "workshop", "content", item.AppId,
+                item.WorkshopId),
+            Item = item
+        };
     }
-    
+
     public Task CancelDownload()
     {
-        return _cmdRunner.KillSteamCmd();
+        return cmdRunner.KillSteamCmd();
     }
 }
 

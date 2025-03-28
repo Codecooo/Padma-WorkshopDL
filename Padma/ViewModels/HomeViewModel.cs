@@ -38,7 +38,10 @@ public partial class HomeViewModel : ReactiveObject
 
         // Subscribe to progress updates in DownloadProgressTracker.
         _downloadTracker.ProgressUpdated += progress => DownloadProgress = progress;
-
+        
+        // Subscribe to changes in workshop title when we are doing multiple downloads
+        _downloadProcessor.WorkshopTitleChanged += workshopTitle => WorkshopTitle = workshopTitle;
+        
         // Auto-clear download bar when download finish or failed.
         this.WhenAnyValue(x => x.DownloadStatusNow)
             .Subscribe(_ => AutoClearDownloadBar());
@@ -224,7 +227,6 @@ public partial class HomeViewModel : ReactiveObject
         if (string.IsNullOrEmpty(ProcessedWorkshopTitles) || DownloadStatusNow is "Downloading")
             return;
         await _cts.CancelAsync();
-        WorkshopTitle = _appIdFinder.ModTitle;
 
         IsVisible = true;
         DownloadStarted = true;

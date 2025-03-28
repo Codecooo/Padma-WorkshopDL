@@ -12,7 +12,7 @@ namespace Padma.ViewModels;
 
 public partial class SettingsViewModel : ReactiveObject
 {
-    public AppSettingsJsonClass? AppSettingsJson;
+    private AppSettingsJsonClass? _appSettingsJson;
     private readonly string _appSettingsPath;
     private readonly FolderPicker _folderPicker;
     private readonly HomeViewModel _homeViewModel;
@@ -72,14 +72,14 @@ public partial class SettingsViewModel : ReactiveObject
     private void CreateAppSettings()
     {
         File.Create(_appSettingsPath).Dispose();
-        AppSettingsJson = new ()
+        _appSettingsJson = new ()
         {
             HistoryEnabled = true,
             DownloadPath = "default",
             AutoInstallStellarisMods = true
         };
-        string jsonString = JsonSerializer.Serialize(AppSettingsJson, JsonSerializerGenerator.Default.AppSettingsJsonClass);
-        File.WriteAllText(_appSettingsPath, jsonString);
+        string jsonString = JsonSerializer.Serialize(_appSettingsJson, JsonSerializerGenerator.Default.AppSettingsJsonClass);
+        File.WriteAllText(_appSettingsPath, jsonString);    
     }
 
     [RelayCommand]

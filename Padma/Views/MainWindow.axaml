@@ -6,7 +6,7 @@
         mc:Ignorable="d"
         d:DesignWidth="900"
         d:DesignHeight="450"
-        Height="525"
+        Height="555"
         Width="900"
         CanResize="False"
         xmlns:views="clr-namespace:Padma.Views"

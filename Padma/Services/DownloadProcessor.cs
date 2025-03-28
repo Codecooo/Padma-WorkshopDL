@@ -36,6 +36,7 @@ public class DownloadProcessor
     }
 
     public event Func<string, Task>? LogAsync;
+    public event Action<string>? WorkshopTitleChanged;
 
     /// <summary>
     ///     Extract workshop information and prepare for download
@@ -87,52 +88,39 @@ public class DownloadProcessor
         bool autoInstallStellaris,
         bool saveToHistory)
     {
-        try
+        WorkshopTitleChanged?.Invoke(item.Title);
+        await LogAsync($"Starting download for {item.Title}");
+
+        var result = await _downloadMods.DownloadMod(item);
+
+        if (result.Success)
         {
-            await LogAsync($"Starting download for {item.Title}");
+            await LogAsync($"Download completed for {item.Title}");
 
-            var result = await _downloadMods.DownloadMod(item);
-
-            if (result.Success)
+            // Handle stellaris auto-install if enabled
+            if (autoInstallStellaris && item.AppId is "281990")
             {
-                await LogAsync($"Download completed for {item.Title}");
-
-                // Handle stellaris auto-install if enabled
-                if (autoInstallStellaris && item.AppId is "281990")
-                {
-                    await LogAsync($"Workshop item {item.WorkshopId} is a Stellaris mod");
-                    result.DownloadPath = $"\"{_stellarisAutoInstall.StellarisDocPath}\"";
-                    await _stellarisAutoInstall.RunStellarisAutoInstallMods
-                    (
-                        Path.Combine(_folderPicker.FolderPathView, item.AppId, item.WorkshopId),
-                        item.Title
-                    );
-                }
-
-                // Save to history if enabled
-                if (saveToHistory)
-                    await _historyService.SaveHistoryAsync(
-                        item.Title,
-                        item.Url,
-                        result.DownloadPath,
-                        item.SizeInfo,
-                        item.SizeBytes);
+                await LogAsync($"Workshop item {item.WorkshopId} is a Stellaris mod");
+                result.DownloadPath = $"\"{_stellarisAutoInstall.StellarisDocPath}\"";
+                await _stellarisAutoInstall.RunStellarisAutoInstallMods
+                (
+                    Path.Combine(_folderPicker.FolderPathView, item.AppId, item.WorkshopId),
+                    item.Title
+                );
             }
 
-            _queuedItems.Clear();
-            return result;
+            // Save to history if enabled
+            if (saveToHistory)
+                await _historyService.SaveHistoryAsync(
+                    item.Title,
+                    item.Url,
+                    result.DownloadPath,
+                    item.SizeInfo,
+                    item.SizeBytes);
         }
-        catch (Exception ex)
-        {
-            await LogAsync($"Error processing download for {item.Title}: {ex.Message}");
-            var failedResult = new DownloadResult
-            {
-                Success = false,
-                Item = item
-            };
 
-            return failedResult;
-        }
+        _queuedItems.Clear();
+        return result;
     }
 
     /// <summary>
@@ -168,12 +156,10 @@ public class DownloadProcessor
             results.Add(result);
 
             // Remove from queue if processed, only if not cancelled
-            if (!_cts.Token.IsCancellationRequested)
-            {
-                _queuedItems.Remove(item);
-            }
+            if (!_cts.Token.IsCancellationRequested) _queuedItems.Remove(item);
         }
 
+        IsDownloadingQueue = false;
         return results;
     }
 

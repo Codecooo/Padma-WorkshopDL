@@ -71,7 +71,7 @@ public class DownloadProgressTracker : ReactiveObject
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="workshopId"></param>
-    public void StartTrackingDownload(string appId, string workshopId)
+    private void StartTrackingDownload(string appId, string workshopId)
     {
         if (_isTracking) Reset();
         _isTracking = true;

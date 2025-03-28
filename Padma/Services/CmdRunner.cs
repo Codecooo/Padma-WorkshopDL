@@ -14,11 +14,12 @@ public class CmdRunner
 {
     private const int MaxRetries = 6;
     private const int RetryDelaySeconds = 10;
-    private const int DownloadTimeoutMinutes = 30;
+    private const int DownloadTimeoutMinutes = 10;
 
     public string SteamCmdDirPath = string.Empty;
     public string SteamCmdFilePath = string.Empty;
     public bool Success;
+    private bool _isCanceled;
 
     public event Func<string, Task>? LogAsync;
 
@@ -116,17 +117,16 @@ public class CmdRunner
     }
     
     /// <summary>
-    ///     Download the mods with terminal for steamcmd, it provides delay if the process encounter any timeout error
+    ///     Download the mods with terminal for steamcmd, it provides delay if the process encounter any error
     ///     usual for large size downloads. The default is 6 max attempts, this should suffice unless the user has really
     ///     bad internet speed or the size is abnormally large.
     /// </summary>
     /// <param name="workshopId"></param>
     /// <param name="appId"></param>
-    public async Task ModDownloader(string workshopId, string appId, string downloadPath)
+    private async Task ModDownloader(string workshopId, string appId, string downloadPath)
     {
         var retryCount = 0;
         var downloadComplete = false;
-        var timeoutErrorReceived = false;
 
         do
         {
@@ -144,27 +144,20 @@ public class CmdRunner
                 if (Success)
                 {
                     downloadComplete = true;
-                    timeoutErrorReceived = false;
                     await LogAsync("Download completed successfully");
                 }
             }
-            catch (OperationCanceledException)
+            catch (Exception e)
             {
-                timeoutErrorReceived = true;
-                await LogAsync("Download timed out");
+                await LogAsync($"Error downloading mod: {e.Message}, retrying...");
                 retryCount++;
-                if (retryCount < MaxRetries && timeoutErrorReceived)
+                if (retryCount < MaxRetries && !_isCanceled)
                 {
                     await LogAsync($"Waiting {RetryDelaySeconds} seconds before retry...");
                     await Task.Delay(TimeSpan.FromSeconds(RetryDelaySeconds));
                 }
             }
-            catch (Exception e)
-            {
-                timeoutErrorReceived = false;
-                await LogAsync($"Error during download: {e.Message}");
-            }
-        } while (!downloadComplete && retryCount < MaxRetries && timeoutErrorReceived);
+        } while (!downloadComplete && retryCount < MaxRetries && !_isCanceled);
 
         if (!downloadComplete)
         {
@@ -272,14 +265,14 @@ public class CmdRunner
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
-        await process.WaitForExitAsync();
+        await process.WaitForExitAsync(cancellationToken);
 
         await Task.WhenAny(tcs.Task, Task.Delay(-1, cancellationToken));
 
         if (!process.HasExited)
         {
             process.Kill();
-            throw new OperationCanceledException("Download operation timed out");
+            throw new Exception("Download operation timed out");
         }
 
         lock (logsBuffer)
@@ -333,6 +326,7 @@ public class CmdRunner
     {
         try
         {
+            _isCanceled = true;
             Success = false;
             await LogAsync("Killing steamcmd...");
             foreach (var process in Process.GetProcessesByName("steamcmd")) process.Kill();
@@ -341,6 +335,7 @@ public class CmdRunner
         catch (Exception e)
         {
             await LogAsync($"Error killing steamcmd: {e.Message}");
+            _isCanceled = false;
         }
     }
 }
